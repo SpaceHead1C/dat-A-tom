@@ -32,6 +32,9 @@ func main() {
 	}
 	cancel()
 	defer db.Close()
+	if err := migrations.UpMigrations(db); err != nil {
+		panic(err.Error())
+	}
 	if err != nil {
 		panic(err)
 	}

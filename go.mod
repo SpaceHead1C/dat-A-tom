@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/ardanlabs/conf v1.5.0
-	github.com/jackc/pgx/v5 v5.2.0
+	github.com/pressly/goose v2.7.0+incompatible
 	go.uber.org/zap v1.24.0
 )
 
