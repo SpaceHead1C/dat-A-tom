@@ -2,10 +2,32 @@ package pg
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/stdlib"
 )
+
+type SSLMode uint
+
+const (
+	SSLDisable SSLMode = iota
+	SSLRequire
+	SSLVerifyCA
+	SSLVerifyFull
+)
+
+func (m SSLMode) String() string {
+	switch m {
+	case SSLRequire:
+		return "require"
+	case SSLVerifyCA:
+		return "verify-ca"
+	case SSLVerifyFull:
+		return "verify-full"
+	}
+	return "disable"
+}
 
 type Config struct {
 	Address      string
@@ -13,17 +35,24 @@ type Config struct {
 	User         string
 	Password     string
 	DatabaseName string
+	SSLMode      SSLMode
 }
 
-func NewDB(ctx context.Context, c Config) (*pgx.Conn, error) {
-	dbUrl := connectionString(c)
-	conn, err := pgx.Connect(ctx, dbUrl)
+type DB struct {
+	*sql.DB
+}
+
+func NewDB(ctx context.Context, c Config) (*DB, error) {
+	db, err := sql.Open("pgx", connectionString(c))
 	if err != nil {
 		return nil, err
 	}
-	return conn, nil
+	return &DB{db}, nil
 }
 
 func connectionString(c Config) string {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s", c.User, c.Password, c.Address, c.Port, c.DatabaseName)
+	return fmt.Sprintf(
+		"user=%s password=%s host=%s port=%d database=%s sslmode=%s",
+		c.User, c.Password, c.Address, c.Port, c.DatabaseName, c.SSLMode.String(),
+	)
 }
