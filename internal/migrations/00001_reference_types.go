@@ -17,16 +17,10 @@ CREATE TABLE IF NOT EXISTS reference_types (
 	"name" varchar(128) NOT NULL DEFAULT '',
 	description varchar(1024) NOT NULL DEFAULT ''
 );`
-	if _, err := tx.Exec(query); err != nil {
-		return err
-	}
-	return nil
+	return execQuery(query, tx)
 }
 
 func down00001(tx *sql.Tx) error {
-	query := `DROP TABLE reference_types;`
-	if _, err := tx.Exec(query); err != nil {
-		return err
-	}
-	return nil
+	query := `DROP TABLE IF EXISTS reference_types;`
+	return execQuery(query, tx)
 }

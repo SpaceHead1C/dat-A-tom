@@ -22,16 +22,10 @@ CREATE TABLE IF NOT EXISTS records (
 			FOREIGN KEY(reference_type_id)
 				REFERENCES reference_types(id)
 );`
-	if _, err := tx.Exec(query); err != nil {
-		return err
-	}
-	return nil
+	return execQuery(query, tx)
 }
 
 func down00002(tx *sql.Tx) error {
-	query := `DROP TABLE records;`
-	if _, err := tx.Exec(query); err != nil {
-		return err
-	}
-	return nil
+	query := `DROP TABLE IF EXISTS records;`
+	return execQuery(query, tx)
 }
