@@ -47,5 +47,8 @@ func NewDB(ctx context.Context, c Config) (*pgx.Conn, error) {
 }
 
 func connectionString(c Config) string {
-	return fmt.Sprintf("postgres://%s:%s@%s:%d/%s", c.User, c.Password, c.Address, c.Port, c.DatabaseName)
+	return fmt.Sprintf(
+		"user=%s password=%s host=%s port=%d database=%s sslmode=%s",
+		c.User, c.Password, c.Address, c.Port, c.DatabaseName, c.SSLMode.String(),
+	)
 }
