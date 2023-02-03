@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"datatom/internal/adapter/pg"
+	"datatom/internal/migrations"
 	pkgpg "datatom/pkg/db/pg"
 	"datatom/pkg/log"
 	"os"
@@ -27,7 +29,7 @@ func main() {
 		DatabaseName: c.PostgresDBName,
 	})
 	if err != nil {
-	cancel()
+		cancel()
 		panic(err.Error())
 	}
 	cancel()
@@ -35,9 +37,11 @@ func main() {
 	if err := migrations.UpMigrations(db); err != nil {
 		panic(err.Error())
 	}
+	repo, err := pg.NewRepository(db, l)
 	if err != nil {
-		panic(err)
+		panic(err.Error())
 	}
+	defer repo.CloseConn(db)
 	l.Debug(db != nil)
 	l.Info("dat(A)tom service is up")
 }
