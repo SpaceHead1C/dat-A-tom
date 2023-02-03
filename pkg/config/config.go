@@ -46,7 +46,7 @@ func Configure(args []string, cfg any, opts ...option) error {
 				return fmt.Errorf("config file parse error: %w", err)
 			}
 		}
-		if strings.TrimSpace(rType.Field(i).Tag.Get(zeroTag)) == noParam && field.IsZero() {
+		if strings.TrimSpace(fieldType.Tag.Get(zeroTag)) == noParam && field.IsZero() {
 			return fmt.Errorf("option %s contains zero value", fieldType.Name)
 		}
 	}
