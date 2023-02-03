@@ -34,14 +34,19 @@ func main() {
 	}
 	cancel()
 	defer db.Close()
+	l.Info("database connected")
+
 	if err := migrations.UpMigrations(db); err != nil {
 		panic(err.Error())
 	}
+	l.Info("migrations got up")
+
 	repo, err := pg.NewRepository(db, l)
 	if err != nil {
 		panic(err.Error())
 	}
 	defer repo.CloseConn(db)
-	l.Debug(db != nil)
+	l.Info("repository configured")
+
 	l.Info("dat(A)tom service is up")
 }
