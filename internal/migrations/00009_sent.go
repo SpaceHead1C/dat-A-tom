@@ -15,7 +15,7 @@ func up00009(tx *sql.Tx) error {
 CREATE TABLE IF NOT EXISTS sent (
 	record_id uuid NOT NULL,
 	property_id uuid NOT NULL,
-	sum char(64) NOT NULL DEFAULT '???',
+	"sum" char(64) NOT NULL DEFAULT '???',
 	sent_at timestamp NOT NULL DEFAULT '1970-01-01 00:00:00.0',
 	CONSTRAINT fk_record
 		FOREIGN KEY(record_id)
