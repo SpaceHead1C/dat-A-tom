@@ -6,8 +6,11 @@ import (
 	"datatom/internal/migrations"
 	pkgpg "datatom/pkg/db/pg"
 	"datatom/pkg/log"
+	"datatom/rest"
 	"os"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -39,7 +42,6 @@ func main() {
 	if err := migrations.UpMigrations(db); err != nil {
 		panic(err.Error())
 	}
-	l.Info("migrations got up")
 
 	repo, err := pg.NewRepository(db, l)
 	if err != nil {
@@ -48,5 +50,25 @@ func main() {
 	defer repo.CloseConn(db)
 	l.Info("repository configured")
 
+	restServer, err := rest.NewServer(rest.Config{
+		Logger: l,
+		Port:   c.RESTPort,
+	})
+	if err != nil {
+		panic(err.Error())
+	}
+	l.Info("REST server listens at port:", c.RESTPort)
+
+	g, _ := errgroup.WithContext(context.Background())
+	g.Go(func() error {
+		err := restServer.Serve()
+		l.Errorln("REST server up error:", err.Error())
+		return err
+	})
+
 	l.Info("dat(A)tom service is up")
+
+	if err := g.Wait(); err != nil {
+		panic(err.Error())
+	}
 }
