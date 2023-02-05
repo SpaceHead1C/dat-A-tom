@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/go-chi/chi/v5"
+	mw "github.com/go-chi/chi/v5/middleware"
 	"go.uber.org/zap"
 )
 
@@ -45,6 +48,12 @@ func NewServer(c Config) (domain.Server, error) {
 		errorHandler: eh,
 	}
 
+	router := chi.NewRouter()
+	router.Use(mw.StripSlashes)
+	router.Use(mw.GetHead)
+
+	router.Mount("/health", healthRouter(out))
+
 	out.srv = &http.Server{
 		Addr:         fmt.Sprintf(":%d", c.Port),
 		WriteTimeout: time.Second * 2,
@@ -53,4 +62,10 @@ func NewServer(c Config) (domain.Server, error) {
 		Handler:      router,
 	}
 	return out, nil
+}
+
+func healthRouter(s *server) *chi.Mux {
+	r := chi.NewRouter()
+	r.Get("/ping", newPingHandler(s))
+	return r
 }
