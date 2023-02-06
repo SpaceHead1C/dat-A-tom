@@ -2,6 +2,7 @@ package test
 
 import (
 	"context"
+	"datatom/internal/api"
 	apg "datatom/internal/adapter/pg"
 	pkgpg "datatom/pkg/db/pg"
 	"datatom/pkg/log"
@@ -37,6 +38,18 @@ func newPgRepo(t *testing.T) *apg.Repository {
 	out, err := apg.NewRepository(db, l)
 	if err != nil {
 		_ = db.Close()
+		t.Fatal(err)
+	}
+	return out
+}
+
+func newTestRefTypeManager(t *testing.T) *api.RefTypeManager {
+	repo := newPgRepo(t)
+	out, err := api.NewRefTypeManager(api.RefTypeConfig{
+		Repository: repo,
+		Timeout: time.Second,
+	})
+	if err != nil {
 		t.Fatal(err)
 	}
 	return out
