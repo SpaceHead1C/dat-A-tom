@@ -9,6 +9,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/pressly/goose v2.7.0+incompatible
+	github.com/subosito/gotenv v1.4.2
 	go.uber.org/zap v1.24.0
 	golang.org/x/sync v0.1.0
 )
