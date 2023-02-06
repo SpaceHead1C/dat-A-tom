@@ -10,6 +10,8 @@ import (
 	"go.uber.org/zap"
 )
 
+const getUUIDAttemptsThreshold = 10
+
 type Repository struct {
 	*pgx.Conn
 	l *zap.SugaredLogger

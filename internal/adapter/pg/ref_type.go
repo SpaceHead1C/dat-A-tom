@@ -16,11 +16,14 @@ func (r *Repository) AddRefType(ctx context.Context, req AddRefTypeRequest) (uui
 		req.Description,
 	}
 	query := `SELECT new_ref_type($1, $2);`
-	if err := r.QueryRowEx(ctx, query, nil, args...).Scan(&out); err != nil {
-		if IsNotUniqueError(err) {
-			return out, errCanNotGetUniqueID
+	for attempts := 0; attempts < getUUIDAttemptsThreshold; attempts++ {
+		if err := r.QueryRowEx(ctx, query, nil, args...).Scan(&out); err != nil {
+			if IsNotUniqueError(err) {
+				continue
+			}
+			return out, fmt.Errorf("database error: %w, %s", err, query)
 		}
-		return out, fmt.Errorf("database error: %w, %s", err, query)
+		return out, nil
 	}
-	return out, nil
+	return out, errCanNotGetUniqueID
 }
