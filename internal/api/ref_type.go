@@ -1,8 +1,12 @@
 package api
 
 import (
+	"context"
+	. "datatom/internal/domain"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 const defaultRefTypeManagerTimeout = time.Second * 10
@@ -24,4 +28,10 @@ func NewRefTypeManager(c RefTypeConfig) (*RefTypeManager, error) {
 		c.Timeout = defaultRefTypeManagerTimeout
 	}
 	return &RefTypeManager{c}, nil
+}
+
+func (rtm *RefTypeManager) Add(req AddRefTypeRequest) (uuid.UUID, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), rtm.Timeout)
+	defer cancel()
+	return rtm.Repository.AddRefType(ctx, req)
 }
