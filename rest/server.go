@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"datatom/internal/api"
 	"datatom/internal/domain"
 	"datatom/pkg/log"
 	"fmt"
@@ -21,6 +22,7 @@ type server struct {
 	srv            *http.Server
 	errorHandler   func(error)
 	timeout        time.Duration
+	refTypeManager *api.RefTypeManager
 }
 
 func (s *server) Serve() error {
@@ -32,6 +34,7 @@ type Config struct {
 	Port           uint
 	ErrorHandler   func(error)
 	Timeout        time.Duration
+	RefTypeManager *api.RefTypeManager
 }
 
 func NewServer(c Config) (domain.Server, error) {
@@ -49,6 +52,9 @@ func NewServer(c Config) (domain.Server, error) {
 			l.Errorln(e.Error())
 		}
 	}
+	if c.RefTypeManager == nil {
+		return nil, fmt.Errorf("reference type manager must not be nil")
+	}
 	if c.Timeout == 0 {
 		c.Timeout = defaultHTTPServerTimeout
 	}
@@ -56,6 +62,7 @@ func NewServer(c Config) (domain.Server, error) {
 		logger:         l,
 		errorHandler:   eh,
 		timeout:        c.Timeout,
+		refTypeManager: c.RefTypeManager,
 	}
 
 	router := chi.NewRouter()
