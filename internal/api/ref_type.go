@@ -30,8 +30,8 @@ func NewRefTypeManager(c RefTypeConfig) (*RefTypeManager, error) {
 	return &RefTypeManager{c}, nil
 }
 
-func (rtm *RefTypeManager) Add(req AddRefTypeRequest) (uuid.UUID, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), rtm.Timeout)
+func (rtm *RefTypeManager) Add(ctx context.Context, req AddRefTypeRequest) (uuid.UUID, error) {
+	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
 	defer cancel()
 	return rtm.Repository.AddRefType(ctx, req)
 }

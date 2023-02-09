@@ -1,13 +1,17 @@
 package test
 
 import (
+	"context"
 	. "datatom/internal/domain"
 	"testing"
+	"time"
 )
 
 func TestAddRefType(t *testing.T) {
 	mngr := newTestRefTypeManager(t)
-	id, err := mngr.Add(AddRefTypeRequest{
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+	id, err := mngr.Add(ctx, AddRefTypeRequest{
 		Name: "Группы магазинов для графиков",
 	})
 	if err != nil {
