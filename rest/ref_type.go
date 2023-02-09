@@ -105,3 +105,23 @@ func newPatchRefTypeHandler(s *server) http.HandlerFunc {
 		s.jsonResp(w, res.Status, res.Payload)
 	})
 }
+
+func newGetRefTypeHandler(s *server) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		id := chi.URLParam(req, "id")
+		res, err := handlers.GetRefType(req.Context(), s.refTypeManager, id)
+		if err != nil {
+			switch res.Status {
+			case http.StatusBadRequest:
+				s.textResp(w, res.Status, err.Error())
+			case http.StatusInternalServerError:
+				s.logger.Errorf("get reference type error: %s", err)
+				fallthrough
+			default:
+				s.emptyResp(w, res.Status)
+			}
+			return
+		}
+		s.jsonResp(w, res.Status, res.Payload)
+	})
+}

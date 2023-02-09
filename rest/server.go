@@ -96,6 +96,7 @@ func refTypeRouter(s *server) *chi.Mux {
 	r.Post("/", newAddRefTypeHandler(s))
 	r.Put(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newUpdRefTypeHandler(s))
 	r.Patch(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newPatchRefTypeHandler(s))
+	r.Get(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newGetRefTypeHandler(s))
 	return r
 }
 
