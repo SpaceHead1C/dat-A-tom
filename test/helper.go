@@ -2,8 +2,8 @@ package test
 
 import (
 	"context"
-	"datatom/internal/api"
 	apg "datatom/internal/adapter/pg"
+	"datatom/internal/api"
 	pkgpg "datatom/pkg/db/pg"
 	"datatom/pkg/log"
 	"os"
