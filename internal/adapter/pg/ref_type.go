@@ -27,3 +27,23 @@ func (r *Repository) AddRefType(ctx context.Context, req AddRefTypeRequest) (uui
 	}
 	return out, errCanNotGetUniqueID
 }
+
+func (r *Repository) UpdateRefType(ctx context.Context, req UpdRefTypeRequest) (*RefType, error) {
+	var out RefType
+	args := make([]any, 3)
+	args[0] = req.ID
+	if req.Name != nil {
+		args[1] = *req.Name
+	}
+	if req.Description != nil {
+		args[2] = *req.Description
+	}
+	query := `SELECT * FROM update_ref_type($1, $2, $3);`
+	if err := r.QueryRowEx(ctx, query, nil, args...).Scan(&out.ID, &out.Name, &out.Description); err != nil {
+		if IsNoRowsError(err) {
+			return nil, ErrRefTypeNotFound
+		}
+		return nil, fmt.Errorf("database error: %w, %s", err, query)
+	}
+	return &out, nil
+}
