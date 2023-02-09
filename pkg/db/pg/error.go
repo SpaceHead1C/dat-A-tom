@@ -1,6 +1,10 @@
 package pg
 
-import "github.com/jackc/pgx"
+import (
+	"errors"
+
+	"github.com/jackc/pgx"
+)
 
 func IsNotUniqueError(err error) bool {
 	if err == nil {
@@ -8,4 +12,8 @@ func IsNotUniqueError(err error) bool {
 	}
 	pgErr, ok := err.(pgx.PgError)
 	return ok && pgErr.Code == "23505"
+}
+
+func IsNoRowsError(err error) bool {
+	return errors.Is(err, pgx.ErrNoRows)
 }
