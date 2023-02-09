@@ -47,3 +47,15 @@ func (r *Repository) UpdateRefType(ctx context.Context, req UpdRefTypeRequest) (
 	}
 	return &out, nil
 }
+
+func (r *Repository) GetRefType(ctx context.Context, id uuid.UUID) (*RefType, error) {
+	query := `SELECT * FROM get_ref_type($1);`
+	var out RefType
+	if err := r.QueryRowEx(ctx, query, nil, id).Scan(&out.ID, &out.Name, &out.Description); err != nil {
+		if IsNoRowsError(err) {
+			return nil, ErrRefTypeNotFound
+		}
+		return nil, fmt.Errorf("database error: %w, %s", err, query)
+	}
+	return &out, nil
+}

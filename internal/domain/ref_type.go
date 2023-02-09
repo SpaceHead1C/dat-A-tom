@@ -9,6 +9,7 @@ import (
 type RefTypeRepository interface {
 	AddRefType(context.Context, AddRefTypeRequest) (uuid.UUID, error)
 	UpdateRefType(context.Context, UpdRefTypeRequest) (*RefType, error)
+	GetRefType(context.Context, uuid.UUID) (*RefType, error)
 }
 
 type RefType struct {
