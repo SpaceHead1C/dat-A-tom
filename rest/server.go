@@ -12,10 +12,15 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	defaultHTTPServerTimeout = time.Second * 5
+)
+
 type server struct {
-	logger       *zap.SugaredLogger
-	srv          *http.Server
-	errorHandler func(error)
+	logger         *zap.SugaredLogger
+	srv            *http.Server
+	errorHandler   func(error)
+	timeout        time.Duration
 }
 
 func (s *server) Serve() error {
@@ -26,6 +31,7 @@ type Config struct {
 	Logger         *zap.SugaredLogger
 	Port           uint
 	ErrorHandler   func(error)
+	Timeout        time.Duration
 }
 
 func NewServer(c Config) (domain.Server, error) {
@@ -43,14 +49,19 @@ func NewServer(c Config) (domain.Server, error) {
 			l.Errorln(e.Error())
 		}
 	}
+	if c.Timeout == 0 {
+		c.Timeout = defaultHTTPServerTimeout
+	}
 	out := &server{
-		logger:       l,
-		errorHandler: eh,
+		logger:         l,
+		errorHandler:   eh,
+		timeout:        c.Timeout,
 	}
 
 	router := chi.NewRouter()
 	router.Use(mw.StripSlashes)
 	router.Use(mw.GetHead)
+	router.Use(mw.Timeout(out.timeout))
 
 	router.Mount("/health", healthRouter(out))
 

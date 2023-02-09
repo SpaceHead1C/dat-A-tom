@@ -51,8 +51,9 @@ func main() {
 	l.Info("repository configured")
 
 	restServer, err := rest.NewServer(rest.Config{
-		Logger: l,
-		Port:   c.RESTPort,
+		Logger:         l,
+		Port:           c.RESTPort,
+		Timeout:        time.Second * time.Duration(c.RESTTimeoutSec),
 	})
 	if err != nil {
 		panic(err.Error())
