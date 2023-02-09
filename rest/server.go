@@ -23,9 +23,9 @@ func (s *server) Serve() error {
 }
 
 type Config struct {
-	Logger       *zap.SugaredLogger
-	Port         int
-	ErrorHandler func(error)
+	Logger         *zap.SugaredLogger
+	Port           uint
+	ErrorHandler   func(error)
 }
 
 func NewServer(c Config) (domain.Server, error) {

@@ -7,7 +7,7 @@ import (
 type config struct {
 	ConfigFilePath string `conf:"flag:config_file_path,short:c,env:CONFIG_FILE_PATH"`
 
-	RESTPort int `conf:"flag:rest_port,short:r,env:REST_PORT" toml:"rest_port" zero:"no"`
+	RESTPort uint `conf:"flag:rest_port,short:r,env:REST_PORT" toml:"rest_port" zero:"no"`
 
 	PostgresAddress  string `conf:"flag:postgres_address,env:POSTGRES_ADDRESS" toml:"postgres_address" zero:"no"`
 	PostgresPort     uint   `conf:"flag:postgres_port,env:POSTGRES_PORT" toml:"postgres_port" zero:"no"`
