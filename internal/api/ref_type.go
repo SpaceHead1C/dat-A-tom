@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-const defaultRefTypeManagerTimeout = time.Second * 10
+const defaultRefTypeManagerTimeout = time.Second
 
 type RefTypeManager struct {
 	RefTypeConfig
