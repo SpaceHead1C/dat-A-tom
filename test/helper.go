@@ -47,7 +47,7 @@ func newTestRefTypeManager(t *testing.T) *api.RefTypeManager {
 	repo := newPgRepo(t)
 	out, err := api.NewRefTypeManager(api.RefTypeConfig{
 		Repository: repo,
-		Timeout: time.Second,
+		Timeout:    time.Second,
 	})
 	if err != nil {
 		t.Fatal(err)
