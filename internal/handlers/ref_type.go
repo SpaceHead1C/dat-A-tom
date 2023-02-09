@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 func AddRefType(ctx context.Context, man *api.RefTypeManager, req AddRefTypeRequestSchema) (TextResult, error) {
@@ -54,6 +56,31 @@ func PatchRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeRe
 		return out, err
 	}
 	refType, err := man.Update(ctx, r)
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		if errors.Is(err, domain.ErrNotFound) {
+			out.Status = http.StatusNotFound
+		}
+		return out, err
+	}
+	b, err := json.Marshal(RefTypeToUpdateResponseSchema(*refType))
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		return out, err
+	}
+	out.Payload = b
+	return out, nil
+}
+
+func GetRefType(ctx context.Context, man *api.RefTypeManager, id string) (Result, error) {
+	out := Result{Status: http.StatusOK}
+	rid, err := uuid.Parse(id)
+	if err != nil {
+		out.Status = http.StatusBadRequest
+		out.Payload = []byte(fmt.Sprintf("parse reference type id error: %s", err))
+		return out, err
+	}
+	refType, err := man.Get(ctx, rid)
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		if errors.Is(err, domain.ErrNotFound) {
