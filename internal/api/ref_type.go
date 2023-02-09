@@ -35,3 +35,9 @@ func (rtm *RefTypeManager) Add(ctx context.Context, req AddRefTypeRequest) (uuid
 	defer cancel()
 	return rtm.Repository.AddRefType(ctx, req)
 }
+
+func (rtm *RefTypeManager) Update(ctx context.Context, req UpdRefTypeRequest) (*RefType, error) {
+	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
+	defer cancel()
+	return rtm.Repository.UpdateRefType(ctx, req)
+}
