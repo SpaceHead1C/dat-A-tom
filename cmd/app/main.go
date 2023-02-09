@@ -57,14 +57,14 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	l.Info("REST server listens at port:", c.RESTPort)
 
 	g, _ := errgroup.WithContext(context.Background())
 	g.Go(func() error {
 		err := restServer.Serve()
-		l.Errorln("REST server up error:", err.Error())
+		l.Errorln("REST server error:", err.Error())
 		return err
 	})
+	l.Infof("REST server listens at port: %d", c.RESTPort)
 
 	l.Info("dat(A)tom service is up")
 
