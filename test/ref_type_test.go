@@ -39,3 +39,17 @@ func TestUpdateRefType(t *testing.T) {
 	t.Log("name:", rt.Name)
 	t.Log("description:", rt.Description)
 }
+
+func TestGetRefType(t *testing.T) {
+	mngr := newTestRefTypeManager(t)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+	rt, err := mngr.Get(ctx, uuid.MustParse("12345678-1234-1234-1234-123456789012"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("=== Reference type ===")
+	t.Log("ID:", rt.ID.String())
+	t.Log("name:", rt.Name)
+	t.Log("description:", rt.Description)
+}
