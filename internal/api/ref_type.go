@@ -41,3 +41,9 @@ func (rtm *RefTypeManager) Update(ctx context.Context, req UpdRefTypeRequest) (*
 	defer cancel()
 	return rtm.Repository.UpdateRefType(ctx, req)
 }
+
+func (rtm *RefTypeManager) Get(ctx context.Context, id uuid.UUID) (*RefType, error) {
+	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
+	defer cancel()
+	return rtm.Repository.GetRefType(ctx, id)
+}
