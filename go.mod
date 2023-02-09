@@ -5,9 +5,13 @@ go 1.19
 require (
 	github.com/BurntSushi/toml v1.2.1
 	github.com/ardanlabs/conf v1.5.0
+	github.com/go-chi/chi/v5 v5.0.8
+	github.com/google/uuid v1.3.0
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/pressly/goose v2.7.0+incompatible
+	github.com/subosito/gotenv v1.4.2
 	go.uber.org/zap v1.24.0
+	golang.org/x/sync v0.1.0
 )
 
 require (

@@ -3,11 +3,15 @@ package main
 import (
 	"context"
 	"datatom/internal/adapter/pg"
+	"datatom/internal/api"
 	"datatom/internal/migrations"
 	pkgpg "datatom/pkg/db/pg"
 	"datatom/pkg/log"
+	"datatom/rest"
 	"os"
 	"time"
+
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -39,7 +43,6 @@ func main() {
 	if err := migrations.UpMigrations(db); err != nil {
 		panic(err.Error())
 	}
-	l.Info("migrations got up")
 
 	repo, err := pg.NewRepository(db, l)
 	if err != nil {
@@ -48,5 +51,36 @@ func main() {
 	defer repo.CloseConn(db)
 	l.Info("repository configured")
 
+	refTypeManager, err := api.NewRefTypeManager(api.RefTypeConfig{
+		Repository: repo,
+		Timeout:    time.Second,
+	})
+	if err != nil {
+		panic(err.Error())
+	}
+	l.Info("reference types manager configured")
+
+	restServer, err := rest.NewServer(rest.Config{
+		Logger:         l,
+		Port:           c.RESTPort,
+		Timeout:        time.Second * time.Duration(c.RESTTimeoutSec),
+		RefTypeManager: refTypeManager,
+	})
+	if err != nil {
+		panic(err.Error())
+	}
+
+	g, _ := errgroup.WithContext(context.Background())
+	g.Go(func() error {
+		err := restServer.Serve()
+		l.Errorln("REST server error:", err.Error())
+		return err
+	})
+	l.Infof("REST server listens at port: %d", c.RESTPort)
+
 	l.Info("dat(A)tom service is up")
+
+	if err := g.Wait(); err != nil {
+		panic(err.Error())
+	}
 }
