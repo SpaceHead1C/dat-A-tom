@@ -37,3 +37,17 @@ func (s *UpdRefTypeRequestSchema) UpdRefTypeRequest() (domain.UpdRefTypeRequest,
 	out.ID = id
 	return out, nil
 }
+
+type UpdRefTypeResponseSchema struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+func RefTypeToUpdateResponseSchema(rt domain.RefType) UpdRefTypeResponseSchema {
+	return UpdRefTypeResponseSchema{
+		ID:          rt.ID.String(),
+		Name:        rt.Name,
+		Description: rt.Description,
+	}
+}
