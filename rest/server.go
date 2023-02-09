@@ -56,8 +56,8 @@ func NewServer(c Config) (domain.Server, error) {
 
 	out.srv = &http.Server{
 		Addr:         fmt.Sprintf(":%d", c.Port),
-		WriteTimeout: time.Second * 2,
-		ReadTimeout:  time.Second * 9,
+		WriteTimeout: time.Second * 7,
+		ReadTimeout:  time.Second * 5,
 		IdleTimeout:  time.Second * 10,
 		Handler:      router,
 	}
