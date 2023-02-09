@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"datatom/internal/adapter/pg"
+	"datatom/internal/api"
 	"datatom/internal/migrations"
 	pkgpg "datatom/pkg/db/pg"
 	"datatom/pkg/log"
@@ -50,21 +51,32 @@ func main() {
 	defer repo.CloseConn(db)
 	l.Info("repository configured")
 
-	restServer, err := rest.NewServer(rest.Config{
-		Logger: l,
-		Port:   c.RESTPort,
+	refTypeManager, err := api.NewRefTypeManager(api.RefTypeConfig{
+		Repository: repo,
+		Timeout:    time.Second,
 	})
 	if err != nil {
 		panic(err.Error())
 	}
-	l.Info("REST server listens at port:", c.RESTPort)
+	l.Info("reference types manager configured")
+
+	restServer, err := rest.NewServer(rest.Config{
+		Logger:         l,
+		Port:           c.RESTPort,
+		Timeout:        time.Second * time.Duration(c.RESTTimeoutSec),
+		RefTypeManager: refTypeManager,
+	})
+	if err != nil {
+		panic(err.Error())
+	}
 
 	g, _ := errgroup.WithContext(context.Background())
 	g.Go(func() error {
 		err := restServer.Serve()
-		l.Errorln("REST server up error:", err.Error())
+		l.Errorln("REST server error:", err.Error())
 		return err
 	})
+	l.Infof("REST server listens at port: %d", c.RESTPort)
 
 	l.Info("dat(A)tom service is up")
 
