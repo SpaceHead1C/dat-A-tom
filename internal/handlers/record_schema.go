@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"datatom/internal/domain"
+	"datatom/pkg/helper"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -49,4 +50,27 @@ func (s UpdRecordRequestSchema) UpdRecordRequest() (domain.UpdRecordRequest, err
 	}
 	out.ID = id
 	return out, nil
+}
+
+type RecordResponseSchema struct {
+	ID              string  `json:"id"`
+	Name            string  `json:"name"`
+	Description     string  `json:"description"`
+	DeletionMark    bool    `json:"deletion_mark"`
+	ReferenceTypeID *string `json:"reference_type_id"`
+}
+
+func RecordToResponseSchema(rt domain.Record) RecordResponseSchema {
+	var refTypeID *string
+	if !helper.IsZeroUUID(rt.ReferenceTypeID) {
+		rtID := rt.ReferenceTypeID.String()
+		refTypeID = &rtID
+	}
+	return RecordResponseSchema{
+		ID:              rt.ID.String(),
+		Name:            rt.Name,
+		Description:     rt.Description,
+		DeletionMark:    rt.DeletionMark,
+		ReferenceTypeID: refTypeID,
+	}
 }

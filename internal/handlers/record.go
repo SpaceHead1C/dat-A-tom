@@ -4,6 +4,7 @@ import (
 	"context"
 	"datatom/internal/api"
 	"datatom/internal/domain"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -51,5 +52,29 @@ func UpdateRecord(ctx context.Context, man *api.RecordManager, req UpdRecordRequ
 		}
 		return out, err
 	}
+	return out, nil
+}
+
+func PatchRecord(ctx context.Context, man *api.RecordManager, req UpdRecordRequestSchema) (Result, error) {
+	out := Result{Status: http.StatusOK}
+	r, err := req.UpdRecordRequest()
+	if err != nil {
+		out.Status = http.StatusBadRequest
+		return out, err
+	}
+	record, err := man.Update(ctx, r)
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		if errors.Is(err, domain.ErrNotFound) {
+			out.Status = http.StatusNotFound
+		}
+		return out, err
+	}
+	b, err := json.Marshal(RecordToResponseSchema(*record))
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		return out, err
+	}
+	out.Payload = b
 	return out, nil
 }
