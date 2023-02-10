@@ -35,3 +35,9 @@ func (rm *RecordManager) Add(ctx context.Context, req AddRecordRequest) (uuid.UU
 	defer cancel()
 	return rm.Repository.AddRecord(ctx, req)
 }
+
+func (rm *RecordManager) Update(ctx context.Context, req UpdRecordRequest) (*Record, error) {
+	ctx, cancel := context.WithTimeout(ctx, rm.Timeout)
+	defer cancel()
+	return rm.Repository.UpdateRecord(ctx, req)
+}
