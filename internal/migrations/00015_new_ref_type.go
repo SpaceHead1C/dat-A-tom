@@ -28,6 +28,6 @@ $new_ref_type$ LANGUAGE plpgsql;`
 }
 
 func down00015(tx *sql.Tx) error {
-	query := `DROP IF EXISTS FUNCTION new_ref_type(text, text);`
+	query := `DROP FUNCTION IF EXISTS new_ref_type(text, text);`
 	return execQuery(query, tx)
 }
