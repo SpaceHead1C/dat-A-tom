@@ -15,7 +15,7 @@ func (r *Repository) AddRecord(ctx context.Context, req AddRecordRequest) (uuid.
 		req.Name,
 		req.Description,
 		req.DeletionMark,
-		NullUUID(req.ReferenceType),
+		NullUUID(req.ReferenceTypeID),
 	}
 	query := `SELECT new_record($1, $2, $3, $4);`
 	for attempts := 0; attempts < getUUIDAttemptsThreshold; attempts++ {

@@ -11,8 +11,8 @@ type RecordRepository interface {
 }
 
 type AddRecordRequest struct {
-	Name          string
-	Description   string
-	DeletionMark  bool
-	ReferenceType uuid.UUID
+	Name            string
+	Description     string
+	DeletionMark    bool
+	ReferenceTypeID uuid.UUID
 }
