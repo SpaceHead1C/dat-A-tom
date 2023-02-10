@@ -80,6 +80,7 @@ func NewServer(c Config) (domain.Server, error) {
 
 	router.Mount("/health", healthRouter(out))
 	router.Mount("/ref_type", refTypeRouter(out))
+	router.Mount("/record", recordRouter(out))
 
 	out.srv = &http.Server{
 		Addr:         fmt.Sprintf(":%d", c.Port),
@@ -103,6 +104,12 @@ func refTypeRouter(s *server) *chi.Mux {
 	r.Put(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newUpdRefTypeHandler(s))
 	r.Patch(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newPatchRefTypeHandler(s))
 	r.Get(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newGetRefTypeHandler(s))
+	return r
+}
+
+func recordRouter(s *server) *chi.Mux {
+	r := chi.NewRouter()
+	r.Post("/", newAddRecordHandler(s))
 	return r
 }
 
