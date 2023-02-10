@@ -10,6 +10,7 @@ import (
 type RecordRepository interface {
 	AddRecord(context.Context, AddRecordRequest) (uuid.UUID, error)
 	UpdateRecord(context.Context, UpdRecordRequest) (*Record, error)
+	GetRecord(context.Context, uuid.UUID) (*Record, error)
 }
 
 type Record struct {

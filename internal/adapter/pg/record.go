@@ -57,3 +57,19 @@ func (r *Repository) UpdateRecord(ctx context.Context, req UpdRecordRequest) (*R
 	}
 	return schema.Record(), nil
 }
+
+func (r *Repository) GetRecord(ctx context.Context, id uuid.UUID) (*Record, error) {
+	var recordJSON []byte
+	query := `SELECT * FROM get_record($1);`
+	if err := r.QueryRowEx(ctx, query, nil, id).Scan(&recordJSON); err != nil {
+		if IsNoRowsError(err) {
+			return nil, ErrRecordNotFound
+		}
+		return nil, fmt.Errorf("database error: %w, %s", err, query)
+	}
+	var schema RecordSchema
+	if err := json.Unmarshal(recordJSON, &schema); err != nil {
+		return nil, fmt.Errorf("db result unmarshal error: %s, %s", err, recordJSON)
+	}
+	return schema.Record(), nil
+}
