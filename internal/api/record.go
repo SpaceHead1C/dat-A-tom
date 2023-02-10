@@ -41,3 +41,9 @@ func (rm *RecordManager) Update(ctx context.Context, req UpdRecordRequest) (*Rec
 	defer cancel()
 	return rm.Repository.UpdateRecord(ctx, req)
 }
+
+func (rm *RecordManager) Get(ctx context.Context, id uuid.UUID) (*Record, error) {
+	ctx, cancel := context.WithTimeout(ctx, rm.Timeout)
+	defer cancel()
+	return rm.Repository.GetRecord(ctx, id)
+}
