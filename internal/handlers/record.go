@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 func AddRecord(ctx context.Context, man *api.RecordManager, req AddRecordRequestSchema) (TextResult, error) {
@@ -63,6 +65,31 @@ func PatchRecord(ctx context.Context, man *api.RecordManager, req UpdRecordReque
 		return out, err
 	}
 	record, err := man.Update(ctx, r)
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		if errors.Is(err, domain.ErrNotFound) {
+			out.Status = http.StatusNotFound
+		}
+		return out, err
+	}
+	b, err := json.Marshal(RecordToResponseSchema(*record))
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		return out, err
+	}
+	out.Payload = b
+	return out, nil
+}
+
+func GetRecord(ctx context.Context, man *api.RecordManager, id string) (Result, error) {
+	out := Result{Status: http.StatusOK}
+	rid, err := uuid.Parse(id)
+	if err != nil {
+		out.Status = http.StatusBadRequest
+		out.Payload = []byte(fmt.Sprintf("parse record id error: %s", err))
+		return out, err
+	}
+	record, err := man.Get(ctx, rid)
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		if errors.Is(err, domain.ErrNotFound) {
