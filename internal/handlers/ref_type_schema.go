@@ -38,14 +38,14 @@ func (s *UpdRefTypeRequestSchema) UpdRefTypeRequest() (domain.UpdRefTypeRequest,
 	return out, nil
 }
 
-type UpdRefTypeResponseSchema struct {
+type RefTypeResponseSchema struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
 
-func RefTypeToUpdateResponseSchema(rt domain.RefType) UpdRefTypeResponseSchema {
-	return UpdRefTypeResponseSchema{
+func RefTypeToResponseSchema(rt domain.RefType) RefTypeResponseSchema {
+	return RefTypeResponseSchema{
 		ID:          rt.ID.String(),
 		Name:        rt.Name,
 		Description: rt.Description,

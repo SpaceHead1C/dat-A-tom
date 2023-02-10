@@ -63,7 +63,7 @@ func PatchRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeRe
 		}
 		return out, err
 	}
-	b, err := json.Marshal(RefTypeToUpdateResponseSchema(*refType))
+	b, err := json.Marshal(RefTypeToResponseSchema(*refType))
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		return out, err
@@ -88,7 +88,7 @@ func GetRefType(ctx context.Context, man *api.RefTypeManager, id string) (Result
 		}
 		return out, err
 	}
-	b, err := json.Marshal(RefTypeToUpdateResponseSchema(*refType))
+	b, err := json.Marshal(RefTypeToResponseSchema(*refType))
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		return out, err
