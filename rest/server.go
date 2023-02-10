@@ -110,6 +110,7 @@ func refTypeRouter(s *server) *chi.Mux {
 func recordRouter(s *server) *chi.Mux {
 	r := chi.NewRouter()
 	r.Post("/", newAddRecordHandler(s))
+	r.Put(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newUpdRecordHandler(s))
 	return r
 }
 
