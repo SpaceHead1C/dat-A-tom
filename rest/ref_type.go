@@ -44,7 +44,6 @@ func newAddRefTypeHandler(s *server) http.HandlerFunc {
 
 func newUpdRefTypeHandler(s *server) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		id := chi.URLParam(req, "id")
 		b, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			s.textResp(w, http.StatusInternalServerError, "read body error")
@@ -56,7 +55,7 @@ func newUpdRefTypeHandler(s *server) http.HandlerFunc {
 			s.textResp(w, http.StatusBadRequest, fmt.Sprintf("body unmarshal error: %s", err))
 			return
 		}
-		schema.ID = id
+		schema.ID = chi.URLParam(req, "id")
 		res, err := handlers.UpdateRefType(req.Context(), s.refTypeManager, schema)
 		if err != nil {
 			switch res.Status {
@@ -76,7 +75,6 @@ func newUpdRefTypeHandler(s *server) http.HandlerFunc {
 
 func newPatchRefTypeHandler(s *server) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		id := chi.URLParam(req, "id")
 		b, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			s.textResp(w, http.StatusInternalServerError, "read body error")
@@ -88,7 +86,7 @@ func newPatchRefTypeHandler(s *server) http.HandlerFunc {
 			s.textResp(w, http.StatusBadRequest, fmt.Sprintf("body unmarshal error: %s", err))
 			return
 		}
-		schema.ID = id
+		schema.ID = chi.URLParam(req, "id")
 		res, err := handlers.PatchRefType(req.Context(), s.refTypeManager, schema)
 		if err != nil {
 			switch res.Status {
@@ -108,8 +106,7 @@ func newPatchRefTypeHandler(s *server) http.HandlerFunc {
 
 func newGetRefTypeHandler(s *server) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		id := chi.URLParam(req, "id")
-		res, err := handlers.GetRefType(req.Context(), s.refTypeManager, id)
+		res, err := handlers.GetRefType(req.Context(), s.refTypeManager, chi.URLParam(req, "id"))
 		if err != nil {
 			switch res.Status {
 			case http.StatusBadRequest:
