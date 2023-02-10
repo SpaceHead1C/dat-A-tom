@@ -112,6 +112,7 @@ func recordRouter(s *server) *chi.Mux {
 	r.Post("/", newAddRecordHandler(s))
 	r.Put(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newUpdRecordHandler(s))
 	r.Patch(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newPatchRecordHandler(s))
+	r.Get(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newGetRecordHandler(s))
 	return r
 }
 

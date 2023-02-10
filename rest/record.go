@@ -103,3 +103,22 @@ func newPatchRecordHandler(s *server) http.HandlerFunc {
 		s.jsonResp(w, res.Status, res.Payload)
 	})
 }
+
+func newGetRecordHandler(s *server) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		res, err := handlers.GetRecord(req.Context(), s.recordManager, chi.URLParam(req, "id"))
+		if err != nil {
+			switch res.Status {
+			case http.StatusBadRequest:
+				s.textResp(w, res.Status, err.Error())
+			case http.StatusInternalServerError:
+				s.logger.Errorf("get record error: %s", err)
+				fallthrough
+			default:
+				s.emptyResp(w, res.Status)
+			}
+			return
+		}
+		s.jsonResp(w, res.Status, res.Payload)
+	})
+}
