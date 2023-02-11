@@ -25,6 +25,7 @@ type server struct {
 	errorHandler   func(error)
 	timeout        time.Duration
 	refTypeManager *api.RefTypeManager
+	recordManager  *api.RecordManager
 }
 
 func (s *server) Serve() error {
@@ -37,6 +38,7 @@ type Config struct {
 	ErrorHandler   func(error)
 	Timeout        time.Duration
 	RefTypeManager *api.RefTypeManager
+	RecordManager  *api.RecordManager
 }
 
 func NewServer(c Config) (domain.Server, error) {
@@ -55,7 +57,10 @@ func NewServer(c Config) (domain.Server, error) {
 		}
 	}
 	if c.RefTypeManager == nil {
-		return nil, fmt.Errorf("reference type manager must not be nil")
+		return nil, fmt.Errorf("reference type manager must be not nil")
+	}
+	if c.RecordManager == nil {
+		return nil, fmt.Errorf("record manager must be not nil")
 	}
 	if c.Timeout == 0 {
 		c.Timeout = defaultHTTPServerTimeout
@@ -65,6 +70,7 @@ func NewServer(c Config) (domain.Server, error) {
 		errorHandler:   eh,
 		timeout:        c.Timeout,
 		refTypeManager: c.RefTypeManager,
+		recordManager:  c.RecordManager,
 	}
 
 	router := chi.NewRouter()
@@ -74,6 +80,7 @@ func NewServer(c Config) (domain.Server, error) {
 
 	router.Mount("/health", healthRouter(out))
 	router.Mount("/ref_type", refTypeRouter(out))
+	router.Mount("/record", recordRouter(out))
 
 	out.srv = &http.Server{
 		Addr:         fmt.Sprintf(":%d", c.Port),
@@ -97,6 +104,15 @@ func refTypeRouter(s *server) *chi.Mux {
 	r.Put(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newUpdRefTypeHandler(s))
 	r.Patch(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newPatchRefTypeHandler(s))
 	r.Get(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newGetRefTypeHandler(s))
+	return r
+}
+
+func recordRouter(s *server) *chi.Mux {
+	r := chi.NewRouter()
+	r.Post("/", newAddRecordHandler(s))
+	r.Put(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newUpdRecordHandler(s))
+	r.Patch(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newPatchRecordHandler(s))
+	r.Get(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newGetRecordHandler(s))
 	return r
 }
 

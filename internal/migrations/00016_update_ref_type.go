@@ -25,6 +25,6 @@ $update_ref_type$ LANGUAGE plpgsql;`
 }
 
 func down00016(tx *sql.Tx) error {
-	query := `DROP IF EXISTS FUNCTION update_ref_type(uuid, text, text);`
+	query := `DROP FUNCTION IF EXISTS update_ref_type(uuid, text, text);`
 	return execQuery(query, tx)
 }

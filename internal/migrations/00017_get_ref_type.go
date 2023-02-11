@@ -23,6 +23,6 @@ $get_ref_type$ LANGUAGE plpgsql;`
 }
 
 func down00017(tx *sql.Tx) error {
-	query := `DROP IF EXISTS FUNCTION get_ref_type(uuid);`
+	query := `DROP FUNCTION IF EXISTS get_ref_type(uuid);`
 	return execQuery(query, tx)
 }

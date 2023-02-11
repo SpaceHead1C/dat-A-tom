@@ -60,11 +60,21 @@ func main() {
 	}
 	l.Info("reference types manager configured")
 
+	recordManager, err := api.NewRecordManager(api.RecordConfig{
+		Repository: repo,
+		Timeout:    time.Second,
+	})
+	if err != nil {
+		panic(err.Error())
+	}
+	l.Info("records manager configured")
+
 	restServer, err := rest.NewServer(rest.Config{
 		Logger:         l,
 		Port:           c.RESTPort,
 		Timeout:        time.Second * time.Duration(c.RESTTimeoutSec),
 		RefTypeManager: refTypeManager,
+		RecordManager:  recordManager,
 	})
 	if err != nil {
 		panic(err.Error())
