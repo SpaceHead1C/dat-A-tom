@@ -55,3 +55,22 @@ func (s AddPropertyRequestSchema) AddPropertyRequest() (domain.AddPropertyReques
 	}
 	return out, nil, nil
 }
+
+type UpdPropertyRequestSchema struct {
+	ID          string  `json:"id"`
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
+}
+
+func (s *UpdPropertyRequestSchema) UpdPropertyRequest() (domain.UpdPropertyRequest, error) {
+	out := domain.UpdPropertyRequest{
+		Name:        s.Name,
+		Description: s.Description,
+	}
+	id, err := uuid.Parse(s.ID)
+	if err != nil {
+		return out, fmt.Errorf("parse property id error: %s", err)
+	}
+	out.ID = id
+	return out, nil
+}
