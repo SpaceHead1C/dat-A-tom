@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 func newAddPropertyHandler(s *server) http.HandlerFunc {
@@ -36,5 +39,36 @@ func newAddPropertyHandler(s *server) http.HandlerFunc {
 		}
 		w.Header().Set("Location", fmt.Sprintf("%s/%s", req.URL.String(), res.Payload))
 		s.textResp(w, res.Status, res.Payload)
+	})
+}
+
+func newUpdPropertyHandler(s *server) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		b, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			s.textResp(w, http.StatusInternalServerError, "read body error")
+			s.logger.Errorf("read body error: %s", err)
+			return
+		}
+		var schema handlers.UpdPropertyRequestSchema
+		if err := json.Unmarshal(b, &schema); err != nil {
+			s.textResp(w, http.StatusBadRequest, fmt.Sprintf("body unmarshal error: %s", err))
+			return
+		}
+		schema.ID = chi.URLParam(req, "id")
+		res, err := handlers.UpdateProperty(req.Context(), s.propertyManager, schema)
+		if err != nil {
+			switch res.Status {
+			case http.StatusBadRequest:
+				s.textResp(w, res.Status, err.Error())
+			case http.StatusInternalServerError:
+				s.logger.Errorf("update property error: %s", err)
+				fallthrough
+			default:
+				s.emptyResp(w, res.Status)
+			}
+			return
+		}
+		s.emptyResp(w, res.Status)
 	})
 }
