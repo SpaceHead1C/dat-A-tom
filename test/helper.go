@@ -66,3 +66,15 @@ func newTestRecordManager(t *testing.T) *api.RecordManager {
 	}
 	return out
 }
+
+func newTestPropertyManager(t *testing.T) *api.PropertyManager {
+	repo := newPgRepo(t)
+	out, err := api.NewPropertyManager(api.PropertyConfig{
+		Repository: repo,
+		Timeout:    time.Second,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
