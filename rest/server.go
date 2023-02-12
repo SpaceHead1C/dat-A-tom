@@ -125,7 +125,7 @@ func recordRouter(s *server) *chi.Mux {
 
 func propertyRouter(s *server) *chi.Mux {
 	r := chi.NewRouter()
-	r.Post("/", newAddRecordHandler(s))
+	r.Post("/", newAddPropertyHandler(s))
 	return r
 }
 
