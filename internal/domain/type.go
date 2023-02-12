@@ -55,8 +55,8 @@ func TypesToCodes(ts []Type) []string {
 		return nil
 	}
 	out := make([]string, 0, len(ts))
-	for _, t := range ts {
-		out = append(out, t.Code())
+	for _, tp := range ts {
+		out = append(out, tp.Code())
 	}
 	return out
 }
