@@ -47,3 +47,22 @@ func TestUpdateProperty(t *testing.T) {
 	t.Log("hash sum:", o.Sum)
 	t.Log("change at:", o.ChangeAt)
 }
+
+func TestGetProperty(t *testing.T) {
+	mngr := newTestPropertyManager(t)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+	o, err := mngr.Get(ctx, uuid.MustParse("12345678-1234-1234-1234-123456789012"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("=== Property ===")
+	t.Log("ID:", o.ID.String())
+	t.Log("name:", o.Name)
+	t.Log("description:", o.Description)
+	t.Log("types:", o.Types)
+	t.Log("reference types:", o.RefTypeIDs)
+	t.Log("owner type ID:", o.OwnerRefTypeID.String())
+	t.Log("hash sum:", o.Sum)
+	t.Log("change at:", o.ChangeAt)
+}
