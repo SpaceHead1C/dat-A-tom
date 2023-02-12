@@ -25,6 +25,9 @@ func (r *Repository) AddProperty(ctx context.Context, req AddPropertyRequest) (u
 			if IsNotUniqueError(err) {
 				continue
 			}
+			if errException, ok := pgExceptionAsDomainError(err); ok {
+				return out, errException
+			}
 			return out, fmt.Errorf("database error: %w, %s", err, query)
 		}
 		return out, nil
