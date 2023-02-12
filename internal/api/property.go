@@ -41,3 +41,9 @@ func (pm *PropertyManager) Update(ctx context.Context, req UpdPropertyRequest) (
 	defer cancel()
 	return pm.Repository.UpdateProperty(ctx, req)
 }
+
+func (pm *PropertyManager) Get(ctx context.Context, id uuid.UUID) (*Property, error) {
+	ctx, cancel := context.WithTimeout(ctx, pm.Timeout)
+	defer cancel()
+	return pm.Repository.GetProperty(ctx, id)
+}
