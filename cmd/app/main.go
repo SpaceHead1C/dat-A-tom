@@ -69,12 +69,22 @@ func main() {
 	}
 	l.Info("records manager configured")
 
+	propertyManager, err := api.NewPropertyManager(api.PropertyConfig{
+		Repository: repo,
+		Timeout:    time.Second,
+	})
+	if err != nil {
+		panic(err.Error())
+	}
+	l.Info("properties manager configured")
+
 	restServer, err := rest.NewServer(rest.Config{
-		Logger:         l,
-		Port:           c.RESTPort,
-		Timeout:        time.Second * time.Duration(c.RESTTimeoutSec),
-		RefTypeManager: refTypeManager,
-		RecordManager:  recordManager,
+		Logger:          l,
+		Port:            c.RESTPort,
+		Timeout:         time.Second * time.Duration(c.RESTTimeoutSec),
+		RefTypeManager:  refTypeManager,
+		RecordManager:   recordManager,
+		PropertyManager: propertyManager,
 	})
 	if err != nil {
 		panic(err.Error())

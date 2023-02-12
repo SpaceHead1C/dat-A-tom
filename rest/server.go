@@ -20,12 +20,13 @@ const (
 )
 
 type server struct {
-	logger         *zap.SugaredLogger
-	srv            *http.Server
-	errorHandler   func(error)
-	timeout        time.Duration
-	refTypeManager *api.RefTypeManager
-	recordManager  *api.RecordManager
+	logger          *zap.SugaredLogger
+	srv             *http.Server
+	errorHandler    func(error)
+	timeout         time.Duration
+	refTypeManager  *api.RefTypeManager
+	recordManager   *api.RecordManager
+	propertyManager *api.PropertyManager
 }
 
 func (s *server) Serve() error {
@@ -33,12 +34,13 @@ func (s *server) Serve() error {
 }
 
 type Config struct {
-	Logger         *zap.SugaredLogger
-	Port           uint
-	ErrorHandler   func(error)
-	Timeout        time.Duration
-	RefTypeManager *api.RefTypeManager
-	RecordManager  *api.RecordManager
+	Logger          *zap.SugaredLogger
+	Port            uint
+	ErrorHandler    func(error)
+	Timeout         time.Duration
+	RefTypeManager  *api.RefTypeManager
+	RecordManager   *api.RecordManager
+	PropertyManager *api.PropertyManager
 }
 
 func NewServer(c Config) (domain.Server, error) {
@@ -62,15 +64,19 @@ func NewServer(c Config) (domain.Server, error) {
 	if c.RecordManager == nil {
 		return nil, fmt.Errorf("record manager must be not nil")
 	}
+	if c.PropertyManager == nil {
+		return nil, fmt.Errorf("property manager must be not nil")
+	}
 	if c.Timeout == 0 {
 		c.Timeout = defaultHTTPServerTimeout
 	}
 	out := &server{
-		logger:         l,
-		errorHandler:   eh,
-		timeout:        c.Timeout,
-		refTypeManager: c.RefTypeManager,
-		recordManager:  c.RecordManager,
+		logger:          l,
+		errorHandler:    eh,
+		timeout:         c.Timeout,
+		refTypeManager:  c.RefTypeManager,
+		recordManager:   c.RecordManager,
+		propertyManager: c.PropertyManager,
 	}
 
 	router := chi.NewRouter()
