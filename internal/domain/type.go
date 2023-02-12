@@ -60,3 +60,33 @@ func TypesToCodes(ts []Type) []string {
 	}
 	return out
 }
+
+func TypeFromCode(code string) Type {
+	switch code {
+	case "number":
+		return TypeNumber
+	case "text":
+		return TypeText
+	case "bool":
+		return TypeBool
+	case "date":
+		return TypeDate
+	case "uuid":
+		return TypeUUID
+	case "ref":
+		return TypeReference
+	default:
+		return UndefinedType
+	}
+}
+
+func TypesFromCodes(codes []string) []Type {
+	if codes == nil {
+		return nil
+	}
+	out := make([]Type, 0, len(codes))
+	for _, code := range codes {
+		out = append(out, TypeFromCode(code))
+	}
+	return out
+}
