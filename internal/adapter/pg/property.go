@@ -55,3 +55,19 @@ func (r *Repository) UpdateProperty(ctx context.Context, req UpdPropertyRequest)
 	}
 	return schema.Property(), nil
 }
+
+func (r *Repository) GetProperty(ctx context.Context, id uuid.UUID) (*Property, error) {
+	var propertyJSON []byte
+	query := `SELECT get_property($1);`
+	if err := r.QueryRowEx(ctx, query, nil, id).Scan(&propertyJSON); err != nil {
+		if IsNoRowsError(err) {
+			return nil, ErrRecordNotFound
+		}
+		return nil, fmt.Errorf("database error: %w, %s", err, query)
+	}
+	var schema PropertySchema
+	if err := json.Unmarshal(propertyJSON, &schema); err != nil {
+		return nil, fmt.Errorf("db result unmarshal error: %s, %s", err, propertyJSON)
+	}
+	return schema.Property(), nil
+}

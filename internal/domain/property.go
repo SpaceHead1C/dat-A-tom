@@ -10,6 +10,7 @@ import (
 type PropertyRepository interface {
 	AddProperty(context.Context, AddPropertyRequest) (uuid.UUID, error)
 	UpdateProperty(context.Context, UpdPropertyRequest) (*Property, error)
+	GetProperty(context.Context, uuid.UUID) (*Property, error)
 }
 
 type Property struct {
