@@ -14,10 +14,10 @@ func TestAddProperty(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20000)
 	defer cancel()
 	id, err := mngr.Add(ctx, domain.AddPropertyRequest{
-		Name:         "Запись",
-		Types:        []domain.Type{domain.TypeText, domain.TypeReference},
-		RefTypes:     []uuid.UUID{uuid.MustParse("12345678-1234-1234-1234-123456789012")},
-		OwnerRefType: uuid.Nil,
+		Name:           "Запись",
+		Types:          []domain.Type{domain.TypeText, domain.TypeReference},
+		RefTypeIDs:     []uuid.UUID{uuid.MustParse("12345678-1234-1234-1234-123456789012")},
+		OwnerRefTypeID: uuid.Nil,
 	})
 	if err != nil {
 		t.Fatal(err)

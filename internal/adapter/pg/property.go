@@ -15,8 +15,8 @@ func (r *Repository) AddProperty(ctx context.Context, req AddPropertyRequest) (u
 		req.Name,
 		req.Description,
 		TypesToCodes(req.Types),
-		ArrayUUID(req.RefTypes),
-		NullUUID(req.OwnerRefType),
+		ArrayUUID(req.RefTypeIDs),
+		NullUUID(req.OwnerRefTypeID),
 	}
 	query := `SELECT new_property($1, $2, $3, $4, $5);`
 	for attempts := 0; attempts < getUUIDAttemptsThreshold; attempts++ {

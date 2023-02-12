@@ -11,10 +11,9 @@ type PropertyRepository interface {
 }
 
 type AddPropertyRequest struct {
-	Types        []Type
-	RefTypes     []uuid.UUID
-	Code         string
-	Name         string
-	Description  string
-	OwnerRefType uuid.UUID
+	Types          []Type
+	RefTypeIDs     []uuid.UUID
+	Name           string
+	Description    string
+	OwnerRefTypeID uuid.UUID
 }
