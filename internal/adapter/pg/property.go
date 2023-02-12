@@ -36,13 +36,19 @@ func (r *Repository) AddProperty(ctx context.Context, req AddPropertyRequest) (u
 }
 
 func (r *Repository) UpdateProperty(ctx context.Context, req UpdPropertyRequest) (*Property, error) {
+	emptyReq := true
 	args := make([]any, 3)
 	args[0] = req.ID
 	if req.Name != nil {
 		args[1] = *req.Name
+		emptyReq = false
 	}
 	if req.Description != nil {
 		args[2] = *req.Description
+		emptyReq = false
+	}
+	if emptyReq {
+		return r.GetProperty(ctx, req.ID)
 	}
 	var propertyJSON []byte
 	query := `SELECT update_property($1, $2, $3);`

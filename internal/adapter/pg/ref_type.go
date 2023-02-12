@@ -30,13 +30,19 @@ func (r *Repository) AddRefType(ctx context.Context, req AddRefTypeRequest) (uui
 
 func (r *Repository) UpdateRefType(ctx context.Context, req UpdRefTypeRequest) (*RefType, error) {
 	var out RefType
+	emptyReq := true
 	args := make([]any, 3)
 	args[0] = req.ID
 	if req.Name != nil {
 		args[1] = *req.Name
+		emptyReq = false
 	}
 	if req.Description != nil {
 		args[2] = *req.Description
+		emptyReq = false
+	}
+	if emptyReq {
+		return r.GetRefType(ctx, req.ID)
 	}
 	query := `SELECT * FROM update_ref_type($1, $2, $3);`
 	if err := r.QueryRowEx(ctx, query, nil, args...).Scan(&out.ID, &out.Name, &out.Description); err != nil {
