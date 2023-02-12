@@ -49,3 +49,14 @@ func (tp Type) Code() string {
 		return "undefined"
 	}
 }
+
+func TypesToCodes(ts []Type) []string {
+	if ts == nil {
+		return nil
+	}
+	out := make([]string, 0, len(ts))
+	for _, t := range ts {
+		out = append(out, t.Code())
+	}
+	return out
+}
