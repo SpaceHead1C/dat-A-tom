@@ -35,3 +35,9 @@ func (pm *PropertyManager) Add(ctx context.Context, req AddPropertyRequest) (uui
 	defer cancel()
 	return pm.Repository.AddProperty(ctx, req)
 }
+
+func (pm *PropertyManager) Update(ctx context.Context, req UpdPropertyRequest) (*Property, error) {
+	ctx, cancel := context.WithTimeout(ctx, pm.Timeout)
+	defer cancel()
+	return pm.Repository.UpdateProperty(ctx, req)
+}
