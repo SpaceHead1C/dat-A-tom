@@ -60,17 +60,17 @@ type RecordResponseSchema struct {
 	ReferenceTypeID *string `json:"reference_type_id"`
 }
 
-func RecordToResponseSchema(rt domain.Record) RecordResponseSchema {
+func RecordToResponseSchema(r domain.Record) RecordResponseSchema {
 	var refTypeID *string
-	if !helper.IsZeroUUID(rt.ReferenceTypeID) {
-		rtID := rt.ReferenceTypeID.String()
+	if !helper.IsZeroUUID(r.ReferenceTypeID) {
+		rtID := r.ReferenceTypeID.String()
 		refTypeID = &rtID
 	}
 	return RecordResponseSchema{
-		ID:              rt.ID.String(),
-		Name:            rt.Name,
-		Description:     rt.Description,
-		DeletionMark:    rt.DeletionMark,
+		ID:              r.ID.String(),
+		Name:            r.Name,
+		Description:     r.Description,
+		DeletionMark:    r.DeletionMark,
 		ReferenceTypeID: refTypeID,
 	}
 }
