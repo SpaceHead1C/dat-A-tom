@@ -4,6 +4,7 @@ import (
 	"context"
 	"datatom/internal/api"
 	"datatom/internal/domain"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -58,5 +59,29 @@ func UpdateProperty(ctx context.Context, man *api.PropertyManager, req UpdProper
 		}
 		return out, err
 	}
+	return out, nil
+}
+
+func PatchProperty(ctx context.Context, man *api.PropertyManager, req UpdPropertyRequestSchema) (Result, error) {
+	out := Result{Status: http.StatusOK}
+	r, err := req.UpdPropertyRequest()
+	if err != nil {
+		out.Status = http.StatusBadRequest
+		return out, err
+	}
+	property, err := man.Update(ctx, r)
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		if errors.Is(err, domain.ErrNotFound) {
+			out.Status = http.StatusNotFound
+		}
+		return out, err
+	}
+	b, err := json.Marshal(PropertyToResponseSchema(*property))
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		return out, err
+	}
+	out.Payload = b
 	return out, nil
 }
