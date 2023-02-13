@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -44,7 +43,7 @@ func newAddRefTypeHandler(s *server) http.HandlerFunc {
 
 func newUpdRefTypeHandler(s *server) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		b, err := ioutil.ReadAll(req.Body)
+		b, err := io.ReadAll(req.Body)
 		if err != nil {
 			s.textResp(w, http.StatusInternalServerError, "read body error")
 			s.logger.Errorf("read body error: %s", err)
@@ -75,7 +74,7 @@ func newUpdRefTypeHandler(s *server) http.HandlerFunc {
 
 func newPatchRefTypeHandler(s *server) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		b, err := ioutil.ReadAll(req.Body)
+		b, err := io.ReadAll(req.Body)
 		if err != nil {
 			s.textResp(w, http.StatusInternalServerError, "read body error")
 			s.logger.Errorf("read body error: %s", err)

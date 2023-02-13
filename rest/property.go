@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-func newAddRecordHandler(s *server) http.HandlerFunc {
+func newAddPropertyHandler(s *server) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		b, err := io.ReadAll(req.Body)
 		if err != nil {
@@ -18,18 +18,18 @@ func newAddRecordHandler(s *server) http.HandlerFunc {
 			s.logger.Errorf("read body error: %s", err)
 			return
 		}
-		var schema handlers.AddRecordRequestSchema
+		var schema handlers.AddPropertyRequestSchema
 		if err := json.Unmarshal(b, &schema); err != nil {
 			s.textResp(w, http.StatusBadRequest, fmt.Sprintf("body unmarshal error: %s", err))
 			return
 		}
-		res, err := handlers.AddRecord(req.Context(), s.recordManager, schema)
+		res, err := handlers.AddProperty(req.Context(), s.propertyManager, schema)
 		if err != nil {
 			switch res.Status {
 			case http.StatusBadRequest:
 				s.textResp(w, res.Status, err.Error())
 			case http.StatusInternalServerError:
-				s.logger.Errorf("add record error: %s", err)
+				s.logger.Errorf("add property error: %s", err)
 				fallthrough
 			default:
 				s.emptyResp(w, res.Status)
@@ -41,7 +41,7 @@ func newAddRecordHandler(s *server) http.HandlerFunc {
 	})
 }
 
-func newUpdRecordHandler(s *server) http.HandlerFunc {
+func newUpdPropertyHandler(s *server) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		b, err := io.ReadAll(req.Body)
 		if err != nil {
@@ -49,19 +49,19 @@ func newUpdRecordHandler(s *server) http.HandlerFunc {
 			s.logger.Errorf("read body error: %s", err)
 			return
 		}
-		var schema handlers.UpdRecordRequestSchema
+		var schema handlers.UpdPropertyRequestSchema
 		if err := json.Unmarshal(b, &schema); err != nil {
 			s.textResp(w, http.StatusBadRequest, fmt.Sprintf("body unmarshal error: %s", err))
 			return
 		}
 		schema.ID = chi.URLParam(req, "id")
-		res, err := handlers.UpdateRecord(req.Context(), s.recordManager, schema)
+		res, err := handlers.UpdateProperty(req.Context(), s.propertyManager, schema)
 		if err != nil {
 			switch res.Status {
 			case http.StatusBadRequest:
 				s.textResp(w, res.Status, err.Error())
 			case http.StatusInternalServerError:
-				s.logger.Errorf("update record error: %s", err)
+				s.logger.Errorf("update property error: %s", err)
 				fallthrough
 			default:
 				s.emptyResp(w, res.Status)
@@ -72,7 +72,7 @@ func newUpdRecordHandler(s *server) http.HandlerFunc {
 	})
 }
 
-func newPatchRecordHandler(s *server) http.HandlerFunc {
+func newPatchPropertyHandler(s *server) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		b, err := io.ReadAll(req.Body)
 		if err != nil {
@@ -80,19 +80,19 @@ func newPatchRecordHandler(s *server) http.HandlerFunc {
 			s.logger.Errorf("read body error: %s", err)
 			return
 		}
-		var schema handlers.UpdRecordRequestSchema
+		var schema handlers.UpdPropertyRequestSchema
 		if err := json.Unmarshal(b, &schema); err != nil {
 			s.textResp(w, http.StatusBadRequest, fmt.Sprintf("body unmarshal error: %s", err))
 			return
 		}
 		schema.ID = chi.URLParam(req, "id")
-		res, err := handlers.PatchRecord(req.Context(), s.recordManager, schema)
+		res, err := handlers.PatchProperty(req.Context(), s.propertyManager, schema)
 		if err != nil {
 			switch res.Status {
 			case http.StatusBadRequest:
 				s.textResp(w, res.Status, err.Error())
 			case http.StatusInternalServerError:
-				s.logger.Errorf("patch record error: %s", err)
+				s.logger.Errorf("patch property error: %s", err)
 				fallthrough
 			default:
 				s.emptyResp(w, res.Status)
@@ -103,15 +103,15 @@ func newPatchRecordHandler(s *server) http.HandlerFunc {
 	})
 }
 
-func newGetRecordHandler(s *server) http.HandlerFunc {
+func newGetPropertyHandler(s *server) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		res, err := handlers.GetRecord(req.Context(), s.recordManager, chi.URLParam(req, "id"))
+		res, err := handlers.GetProperty(req.Context(), s.propertyManager, chi.URLParam(req, "id"))
 		if err != nil {
 			switch res.Status {
 			case http.StatusBadRequest:
 				s.textResp(w, res.Status, err.Error())
 			case http.StatusInternalServerError:
-				s.logger.Errorf("get record error: %s", err)
+				s.logger.Errorf("get property error: %s", err)
 				fallthrough
 			default:
 				s.emptyResp(w, res.Status)

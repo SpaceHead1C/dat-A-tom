@@ -32,16 +32,23 @@ func (r *Repository) AddRecord(ctx context.Context, req AddRecordRequest) (uuid.
 }
 
 func (r *Repository) UpdateRecord(ctx context.Context, req UpdRecordRequest) (*Record, error) {
+	emptyReq := true
 	args := make([]any, 4)
 	args[0] = req.ID
 	if req.Name != nil {
 		args[1] = *req.Name
+		emptyReq = false
 	}
 	if req.Description != nil {
 		args[2] = *req.Description
+		emptyReq = false
 	}
 	if req.DeletionMark != nil {
 		args[3] = *req.DeletionMark
+		emptyReq = false
+	}
+	if emptyReq {
+		return r.GetRecord(ctx, req.ID)
 	}
 	var recordJSON []byte
 	query := `SELECT * FROM update_record($1, $2, $3, $4);`
