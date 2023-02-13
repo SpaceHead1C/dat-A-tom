@@ -8,6 +8,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+
+	"github.com/google/uuid"
 )
 
 func AddProperty(ctx context.Context, man *api.PropertyManager, req AddPropertyRequestSchema) (TextResult, error) {
@@ -70,6 +72,31 @@ func PatchProperty(ctx context.Context, man *api.PropertyManager, req UpdPropert
 		return out, err
 	}
 	property, err := man.Update(ctx, r)
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		if errors.Is(err, domain.ErrNotFound) {
+			out.Status = http.StatusNotFound
+		}
+		return out, err
+	}
+	b, err := json.Marshal(PropertyToResponseSchema(*property))
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		return out, err
+	}
+	out.Payload = b
+	return out, nil
+}
+
+func GetProperty(ctx context.Context, man *api.PropertyManager, id string) (Result, error) {
+	out := Result{Status: http.StatusOK}
+	rid, err := uuid.Parse(id)
+	if err != nil {
+		out.Status = http.StatusBadRequest
+		out.Payload = []byte(fmt.Sprintf("parse property id error: %s", err))
+		return out, err
+	}
+	property, err := man.Get(ctx, rid)
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		if errors.Is(err, domain.ErrNotFound) {
