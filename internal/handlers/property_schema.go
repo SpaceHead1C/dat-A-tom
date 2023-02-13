@@ -44,11 +44,13 @@ func (s AddPropertyRequestSchema) AddPropertyRequest() (domain.AddPropertyReques
 	}
 	out.RefTypeIDs = rtps
 
+	if s.OwnerRefTypeID != "" {
 	ortID, err := uuid.Parse(s.OwnerRefTypeID)
 	if err != nil {
 		return out, nil, fmt.Errorf("parse owner reference type id error: %s", err)
 	}
 	out.OwnerRefTypeID = ortID
+	}
 
 	if len(unknownTypes) > 0 {
 		return out, unknownTypes, nil
