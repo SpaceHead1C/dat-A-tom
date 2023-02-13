@@ -12,9 +12,14 @@ import (
 	"github.com/google/uuid"
 )
 
-func AddRefType(ctx context.Context, man *api.RefTypeManager, req AddRefTypeRequestSchema) (TextResult, error) {
+func AddRecord(ctx context.Context, man *api.RecordManager, req AddRecordRequestSchema) (TextResult, error) {
 	out := TextResult{Status: http.StatusCreated}
-	id, err := man.Add(ctx, req.AddRefTypeRequest())
+	r, err := req.AddRecordRequest()
+	if err != nil {
+		out.Status = http.StatusBadRequest
+		return out, err
+	}
+	id, err := man.Add(ctx, r)
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		return out, err
@@ -23,7 +28,7 @@ func AddRefType(ctx context.Context, man *api.RefTypeManager, req AddRefTypeRequ
 	return out, nil
 }
 
-func UpdateRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeRequestSchema) (Result, error) {
+func UpdateRecord(ctx context.Context, man *api.RecordManager, req UpdRecordRequestSchema) (Result, error) {
 	out := Result{Status: http.StatusNoContent}
 	if req.Name == nil {
 		out.Status = http.StatusBadRequest
@@ -33,7 +38,11 @@ func UpdateRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeR
 		out.Status = http.StatusBadRequest
 		return out, fmt.Errorf("description %w", domain.ErrExpected)
 	}
-	r, err := req.UpdRefTypeRequest()
+	if req.DeletionMark == nil {
+		out.Status = http.StatusBadRequest
+		return out, fmt.Errorf("deletion mark %w", domain.ErrExpected)
+	}
+	r, err := req.UpdRecordRequest()
 	if err != nil {
 		out.Status = http.StatusBadRequest
 		return out, err
@@ -48,14 +57,14 @@ func UpdateRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeR
 	return out, nil
 }
 
-func PatchRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeRequestSchema) (Result, error) {
+func PatchRecord(ctx context.Context, man *api.RecordManager, req UpdRecordRequestSchema) (Result, error) {
 	out := Result{Status: http.StatusOK}
-	r, err := req.UpdRefTypeRequest()
+	r, err := req.UpdRecordRequest()
 	if err != nil {
 		out.Status = http.StatusBadRequest
 		return out, err
 	}
-	refType, err := man.Update(ctx, r)
+	record, err := man.Update(ctx, r)
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		if errors.Is(err, domain.ErrNotFound) {
@@ -63,7 +72,7 @@ func PatchRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeRe
 		}
 		return out, err
 	}
-	b, err := json.Marshal(RefTypeToResponseSchema(*refType))
+	b, err := json.Marshal(RecordToResponseSchema(*record))
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		return out, err
@@ -72,15 +81,15 @@ func PatchRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeRe
 	return out, nil
 }
 
-func GetRefType(ctx context.Context, man *api.RefTypeManager, id string) (Result, error) {
+func GetRecord(ctx context.Context, man *api.RecordManager, id string) (Result, error) {
 	out := Result{Status: http.StatusOK}
 	rid, err := uuid.Parse(id)
 	if err != nil {
 		out.Status = http.StatusBadRequest
-		out.Payload = []byte(fmt.Sprintf("parse reference type id error: %s", err))
+		out.Payload = []byte(fmt.Sprintf("parse record id error: %s", err))
 		return out, err
 	}
-	refType, err := man.Get(ctx, rid)
+	record, err := man.Get(ctx, rid)
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		if errors.Is(err, domain.ErrNotFound) {
@@ -88,7 +97,7 @@ func GetRefType(ctx context.Context, man *api.RefTypeManager, id string) (Result
 		}
 		return out, err
 	}
-	b, err := json.Marshal(RefTypeToResponseSchema(*refType))
+	b, err := json.Marshal(RecordToResponseSchema(*record))
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		return out, err

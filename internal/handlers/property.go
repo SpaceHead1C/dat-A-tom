@@ -12,18 +12,34 @@ import (
 	"github.com/google/uuid"
 )
 
-func AddRefType(ctx context.Context, man *api.RefTypeManager, req AddRefTypeRequestSchema) (TextResult, error) {
+func AddProperty(ctx context.Context, man *api.PropertyManager, req AddPropertyRequestSchema) (TextResult, error) {
 	out := TextResult{Status: http.StatusCreated}
-	id, err := man.Add(ctx, req.AddRefTypeRequest())
+	r, unknownTypes, err := req.AddPropertyRequest()
+	if err != nil {
+		out.Status = http.StatusBadRequest
+		return out, err
+	}
+	if len(unknownTypes) > 0 {
+		out.Status = http.StatusBadRequest
+		return out, fmt.Errorf("unknown types: %v", unknownTypes)
+	}
+	if len(r.Types) == 0 {
+		out.Status = http.StatusBadRequest
+		return out, fmt.Errorf("types %w", domain.ErrExpected)
+	}
+	id, err := man.Add(ctx, r)
 	if err != nil {
 		out.Status = http.StatusInternalServerError
+		if isBadRequestError(err) {
+			out.Status = http.StatusBadRequest
+		}
 		return out, err
 	}
 	out.Payload = id.String()
 	return out, nil
 }
 
-func UpdateRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeRequestSchema) (Result, error) {
+func UpdateProperty(ctx context.Context, man *api.PropertyManager, req UpdPropertyRequestSchema) (Result, error) {
 	out := Result{Status: http.StatusNoContent}
 	if req.Name == nil {
 		out.Status = http.StatusBadRequest
@@ -33,7 +49,7 @@ func UpdateRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeR
 		out.Status = http.StatusBadRequest
 		return out, fmt.Errorf("description %w", domain.ErrExpected)
 	}
-	r, err := req.UpdRefTypeRequest()
+	r, err := req.UpdPropertyRequest()
 	if err != nil {
 		out.Status = http.StatusBadRequest
 		return out, err
@@ -48,14 +64,14 @@ func UpdateRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeR
 	return out, nil
 }
 
-func PatchRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeRequestSchema) (Result, error) {
+func PatchProperty(ctx context.Context, man *api.PropertyManager, req UpdPropertyRequestSchema) (Result, error) {
 	out := Result{Status: http.StatusOK}
-	r, err := req.UpdRefTypeRequest()
+	r, err := req.UpdPropertyRequest()
 	if err != nil {
 		out.Status = http.StatusBadRequest
 		return out, err
 	}
-	refType, err := man.Update(ctx, r)
+	property, err := man.Update(ctx, r)
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		if errors.Is(err, domain.ErrNotFound) {
@@ -63,7 +79,7 @@ func PatchRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeRe
 		}
 		return out, err
 	}
-	b, err := json.Marshal(RefTypeToResponseSchema(*refType))
+	b, err := json.Marshal(PropertyToResponseSchema(*property))
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		return out, err
@@ -72,15 +88,15 @@ func PatchRefType(ctx context.Context, man *api.RefTypeManager, req UpdRefTypeRe
 	return out, nil
 }
 
-func GetRefType(ctx context.Context, man *api.RefTypeManager, id string) (Result, error) {
+func GetProperty(ctx context.Context, man *api.PropertyManager, id string) (Result, error) {
 	out := Result{Status: http.StatusOK}
 	rid, err := uuid.Parse(id)
 	if err != nil {
 		out.Status = http.StatusBadRequest
-		out.Payload = []byte(fmt.Sprintf("parse reference type id error: %s", err))
+		out.Payload = []byte(fmt.Sprintf("parse property id error: %s", err))
 		return out, err
 	}
-	refType, err := man.Get(ctx, rid)
+	property, err := man.Get(ctx, rid)
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		if errors.Is(err, domain.ErrNotFound) {
@@ -88,7 +104,7 @@ func GetRefType(ctx context.Context, man *api.RefTypeManager, id string) (Result
 		}
 		return out, err
 	}
-	b, err := json.Marshal(RefTypeToResponseSchema(*refType))
+	b, err := json.Marshal(PropertyToResponseSchema(*property))
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		return out, err
