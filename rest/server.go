@@ -127,6 +127,7 @@ func propertyRouter(s *server) *chi.Mux {
 	r := chi.NewRouter()
 	r.Post("/", newAddPropertyHandler(s))
 	r.Put(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newUpdPropertyHandler(s))
+	r.Patch(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newPatchPropertyHandler(s))
 	return r
 }
 
