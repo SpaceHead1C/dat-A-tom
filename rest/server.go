@@ -94,6 +94,7 @@ func NewServer(c Config) (domain.Server, error) {
 	router.Mount("/ref_type", refTypeRouter(out))
 	router.Mount("/record", recordRouter(out))
 	router.Mount("/property", propertyRouter(out))
+	router.Mount("/value", valueRouter(out))
 
 	out.srv = &http.Server{
 		Addr:         fmt.Sprintf(":%d", c.Port),
@@ -135,6 +136,12 @@ func propertyRouter(s *server) *chi.Mux {
 	r.Put(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newUpdPropertyHandler(s))
 	r.Patch(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newPatchPropertyHandler(s))
 	r.Get(fmt.Sprintf("/{id:%s}", regexUUIDTemplate), newGetPropertyHandler(s))
+	return r
+}
+
+func valueRouter(s *server) *chi.Mux {
+	r := chi.NewRouter()
+	r.Put("/", newSetValueHandler(s))
 	return r
 }
 
