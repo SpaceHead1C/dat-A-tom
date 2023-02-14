@@ -1,5 +1,9 @@
 package handlers
 
-func Ping() string {
-	return "OK"
+import (
+	"net/http"
+)
+
+func Ping() Result {
+	return Result{Status: http.StatusOK}
 }
