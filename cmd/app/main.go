@@ -95,6 +95,7 @@ func main() {
 		Logger:          l,
 		Port:            c.RESTPort,
 		Timeout:         time.Second * time.Duration(c.RESTTimeoutSec),
+		AppInfo:         *info,
 		RefTypeManager:  refTypeManager,
 		RecordManager:   recordManager,
 		PropertyManager: propertyManager,
