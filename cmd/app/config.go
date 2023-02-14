@@ -7,6 +7,9 @@ import (
 type config struct {
 	ConfigFilePath string `conf:"flag:config_file_path,short:c,env:CONFIG_FILE_PATH"`
 
+	Title       string `conf:"flag:title,env:TITLE" toml:"title"`
+	Description string `conf:"flag:description,env:DESCRIPTION" toml:"description"`
+
 	RESTPort       uint `conf:"flag:rest_port,short:r,env:REST_PORT" toml:"rest_port" zero:"no"`
 	RESTTimeoutSec uint `conf:"flag:rest_timeout,short:r,env:REST_TIMEOUT" toml:"rest_timeout"`
 

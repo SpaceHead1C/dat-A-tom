@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"datatom/internal"
 	"datatom/internal/adapter/pg"
 	"datatom/internal/api"
 	"datatom/internal/migrations"
@@ -23,6 +24,9 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
+
+	info := internal.NewInfo(c.Title, c.Description)
+	info.SetVersion(0, 1, 0)
 
 	dbCtx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	db, err := pkgpg.NewDB(dbCtx, pkgpg.Config{
