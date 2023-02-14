@@ -78,6 +78,15 @@ func main() {
 	}
 	l.Info("properties manager configured")
 
+	valueManager, err := api.NewValueManager(api.ValueConfig{
+		Repository: repo,
+		Timeout:    time.Second,
+	})
+	if err != nil {
+		panic(err.Error())
+	}
+	l.Info("values manager configured")
+
 	restServer, err := rest.NewServer(rest.Config{
 		Logger:          l,
 		Port:            c.RESTPort,
@@ -85,6 +94,7 @@ func main() {
 		RefTypeManager:  refTypeManager,
 		RecordManager:   recordManager,
 		PropertyManager: propertyManager,
+		ValueManager:    valueManager,
 	})
 	if err != nil {
 		panic(err.Error())

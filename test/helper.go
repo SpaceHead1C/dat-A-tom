@@ -78,3 +78,15 @@ func newTestPropertyManager(t *testing.T) *api.PropertyManager {
 	}
 	return out
 }
+
+func newTestValueManager(t *testing.T) *api.ValueManager {
+	repo := newPgRepo(t)
+	out, err := api.NewValueManager(api.ValueConfig{
+		Repository: repo,
+		Timeout:    time.Second,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
