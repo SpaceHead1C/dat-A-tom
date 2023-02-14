@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"datatom/internal"
 	"datatom/internal/api"
 	"datatom/internal/domain"
 	"datatom/pkg/log"
@@ -24,6 +25,7 @@ type server struct {
 	srv             *http.Server
 	errorHandler    func(error)
 	timeout         time.Duration
+	appInfo         internal.Info
 	refTypeManager  *api.RefTypeManager
 	recordManager   *api.RecordManager
 	propertyManager *api.PropertyManager
@@ -39,6 +41,7 @@ type Config struct {
 	Port            uint
 	ErrorHandler    func(error)
 	Timeout         time.Duration
+	AppInfo         internal.Info
 	RefTypeManager  *api.RefTypeManager
 	RecordManager   *api.RecordManager
 	PropertyManager *api.PropertyManager
@@ -79,6 +82,7 @@ func NewServer(c Config) (domain.Server, error) {
 		logger:          l,
 		errorHandler:    eh,
 		timeout:         c.Timeout,
+		appInfo:         c.AppInfo,
 		refTypeManager:  c.RefTypeManager,
 		recordManager:   c.RecordManager,
 		propertyManager: c.PropertyManager,
@@ -109,6 +113,7 @@ func NewServer(c Config) (domain.Server, error) {
 func healthRouter(s *server) *chi.Mux {
 	r := chi.NewRouter()
 	r.Get("/ping", newPingHandler(s))
+	r.Get("/info", newInfoHandler(s))
 	return r
 }
 
