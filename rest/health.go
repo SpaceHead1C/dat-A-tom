@@ -11,3 +11,14 @@ func newPingHandler(s *server) http.HandlerFunc {
 		s.emptyResp(w, res.Status)
 	})
 }
+
+func newInfoHandler(s *server) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		res, err := handlers.Info(s.appInfo)
+		if err != nil {
+			s.logger.Errorf("get app info error: %s", err)
+			s.emptyResp(w, res.Status)
+		}
+		s.jsonResp(w, res.Status, res.Payload)
+	})
+}

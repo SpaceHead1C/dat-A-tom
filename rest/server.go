@@ -113,6 +113,7 @@ func NewServer(c Config) (domain.Server, error) {
 func healthRouter(s *server) *chi.Mux {
 	r := chi.NewRouter()
 	r.Get("/ping", newPingHandler(s))
+	r.Get("/info", newInfoHandler(s))
 	return r
 }
 
