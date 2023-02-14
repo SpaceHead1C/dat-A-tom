@@ -27,6 +27,7 @@ type server struct {
 	refTypeManager  *api.RefTypeManager
 	recordManager   *api.RecordManager
 	propertyManager *api.PropertyManager
+	valueManager    *api.ValueManager
 }
 
 func (s *server) Serve() error {
@@ -41,6 +42,7 @@ type Config struct {
 	RefTypeManager  *api.RefTypeManager
 	RecordManager   *api.RecordManager
 	PropertyManager *api.PropertyManager
+	ValueManager    *api.ValueManager
 }
 
 func NewServer(c Config) (domain.Server, error) {
@@ -67,6 +69,9 @@ func NewServer(c Config) (domain.Server, error) {
 	if c.PropertyManager == nil {
 		return nil, fmt.Errorf("property manager must be not nil")
 	}
+	if c.ValueManager == nil {
+		return nil, fmt.Errorf("value manager must be not nil")
+	}
 	if c.Timeout == 0 {
 		c.Timeout = defaultHTTPServerTimeout
 	}
@@ -77,6 +82,7 @@ func NewServer(c Config) (domain.Server, error) {
 		refTypeManager:  c.RefTypeManager,
 		recordManager:   c.RecordManager,
 		propertyManager: c.PropertyManager,
+		valueManager:    c.ValueManager,
 	}
 
 	router := chi.NewRouter()
