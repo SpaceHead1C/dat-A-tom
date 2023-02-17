@@ -113,7 +113,7 @@ func main() {
 	})
 	l.Infof("REST server listens at port: %d", c.RESTPort)
 
-	l.Info("dat(A)tom service is up")
+	l.Infof("%s service is up", internal.ServiceName)
 
 	if err := g.Wait(); err != nil {
 		panic(err.Error())
