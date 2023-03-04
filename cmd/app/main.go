@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"datatom/grpc"
 	"datatom/internal"
 	"datatom/internal/adapter/pg"
 	"datatom/internal/api"
@@ -91,15 +92,24 @@ func main() {
 	}
 	l.Info("values manager configured")
 
+	dwGRPCConn := grpc.NewConnection(grpc.Config{
+		Logger:  l,
+		Address: c.DatawayGRPCAddress,
+		Port:    c.DatawayGRPCPort,
+	})
+
 	restServer, err := rest.NewServer(rest.Config{
-		Logger:          l,
-		Port:            c.RESTPort,
-		Timeout:         time.Second * time.Duration(c.RESTTimeoutSec),
+		Logger:  l,
+		Port:    c.RESTPort,
+		Timeout: time.Second * time.Duration(c.RESTTimeoutSec),
+
 		AppInfo:         *info,
 		RefTypeManager:  refTypeManager,
 		RecordManager:   recordManager,
 		PropertyManager: propertyManager,
 		ValueManager:    valueManager,
+
+		DatawayGRPCConnection: dwGRPCConn,
 	})
 	if err != nil {
 		panic(err.Error())
