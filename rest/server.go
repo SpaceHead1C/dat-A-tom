@@ -106,6 +106,7 @@ func NewServer(c Config) (domain.Server, error) {
 	router.Mount("/record", recordRouter(out))
 	router.Mount("/property", propertyRouter(out))
 	router.Mount("/value", valueRouter(out))
+	router.Mount("/dataway", datawayRouter(out))
 
 	out.srv = &http.Server{
 		Addr:         fmt.Sprintf(":%d", c.Port),
@@ -154,6 +155,12 @@ func propertyRouter(s *server) *chi.Mux {
 func valueRouter(s *server) *chi.Mux {
 	r := chi.NewRouter()
 	r.Put("/", newSetValueHandler(s))
+	return r
+}
+
+func datawayRouter(s *server) *chi.Mux {
+	r := chi.NewRouter()
+	r.Post("/tom", newRegisterTomHandler(s))
 	return r
 }
 
