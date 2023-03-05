@@ -27,12 +27,14 @@ type server struct {
 	errorHandler func(error)
 	timeout      time.Duration
 
-	dwGRPCConn      *grpc.Connection
-	appInfo         internal.Info
-	refTypeManager  *api.RefTypeManager
-	recordManager   *api.RecordManager
-	propertyManager *api.PropertyManager
-	valueManager    *api.ValueManager
+	dwGRPCConn *grpc.Connection
+	appInfo    internal.Info
+
+	refTypeManager       *api.RefTypeManager
+	recordManager        *api.RecordManager
+	propertyManager      *api.PropertyManager
+	valueManager         *api.ValueManager
+	storedConfigsManager *api.StoredConfigsManager
 }
 
 func (s *server) Serve() error {
@@ -45,11 +47,12 @@ type Config struct {
 	ErrorHandler func(error)
 	Timeout      time.Duration
 
-	AppInfo         internal.Info
-	RefTypeManager  *api.RefTypeManager
-	RecordManager   *api.RecordManager
-	PropertyManager *api.PropertyManager
-	ValueManager    *api.ValueManager
+	AppInfo              internal.Info
+	RefTypeManager       *api.RefTypeManager
+	RecordManager        *api.RecordManager
+	PropertyManager      *api.PropertyManager
+	ValueManager         *api.ValueManager
+	StoredConfigsManager *api.StoredConfigsManager
 
 	DatawayGRPCConnection *grpc.Connection
 }
@@ -81,19 +84,24 @@ func NewServer(c Config) (domain.Server, error) {
 	if c.ValueManager == nil {
 		return nil, fmt.Errorf("value manager must be not nil")
 	}
+	if c.StoredConfigsManager == nil {
+		return nil, fmt.Errorf("stored configs manager must be not nil")
+	}
 	if c.Timeout == 0 {
 		c.Timeout = defaultHTTPServerTimeout
 	}
 	out := &server{
-		logger:          l,
-		errorHandler:    eh,
-		timeout:         c.Timeout,
-		dwGRPCConn:      c.DatawayGRPCConnection,
-		appInfo:         c.AppInfo,
-		refTypeManager:  c.RefTypeManager,
-		recordManager:   c.RecordManager,
-		propertyManager: c.PropertyManager,
-		valueManager:    c.ValueManager,
+		logger:       l,
+		errorHandler: eh,
+		timeout:      c.Timeout,
+		dwGRPCConn:   c.DatawayGRPCConnection,
+		appInfo:      c.AppInfo,
+
+		refTypeManager:       c.RefTypeManager,
+		recordManager:        c.RecordManager,
+		propertyManager:      c.PropertyManager,
+		valueManager:         c.ValueManager,
+		storedConfigsManager: c.StoredConfigsManager,
 	}
 
 	router := chi.NewRouter()
@@ -161,6 +169,7 @@ func valueRouter(s *server) *chi.Mux {
 func datawayRouter(s *server) *chi.Mux {
 	r := chi.NewRouter()
 	r.Post("/tom", newRegisterTomHandler(s))
+	r.Get("/tom", newGetTomIDHandler(s))
 	return r
 }
 

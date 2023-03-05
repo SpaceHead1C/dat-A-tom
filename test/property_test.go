@@ -11,7 +11,7 @@ import (
 
 func TestAddProperty(t *testing.T) {
 	mngr := newTestPropertyManager(t)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*20000)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
 	defer cancel()
 	id, err := mngr.Add(ctx, domain.AddPropertyRequest{
 		Name:           "Запись",

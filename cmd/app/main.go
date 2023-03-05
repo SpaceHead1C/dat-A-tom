@@ -92,6 +92,11 @@ func main() {
 	}
 	l.Info("values manager configured")
 
+	storedConfigsManager, err := api.NewStoredConfigManager(api.StoredConfigsConfig{
+		Repository: repo,
+		Timeout:    time.Second,
+	})
+
 	dwGRPCConn := grpc.NewConnection(grpc.Config{
 		Logger:  l,
 		Address: c.DatawayGRPCAddress,
@@ -103,11 +108,13 @@ func main() {
 		Port:    c.RESTPort,
 		Timeout: time.Second * time.Duration(c.RESTTimeoutSec),
 
-		AppInfo:         *info,
-		RefTypeManager:  refTypeManager,
-		RecordManager:   recordManager,
-		PropertyManager: propertyManager,
-		ValueManager:    valueManager,
+		AppInfo: *info,
+
+		RefTypeManager:       refTypeManager,
+		RecordManager:        recordManager,
+		PropertyManager:      propertyManager,
+		ValueManager:         valueManager,
+		StoredConfigsManager: storedConfigsManager,
 
 		DatawayGRPCConnection: dwGRPCConn,
 	})
