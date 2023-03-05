@@ -12,12 +12,23 @@ const (
 	StoredConfigTomID StoredConfig = iota
 )
 
+type storedConfigGetFunc func(StoredConfigRepository, context.Context) (StoredConfigValue, error)
+
 func (sc StoredConfig) String() string {
 	switch sc {
 	case StoredConfigTomID:
 		return "dat(A)way tom ID"
 	default:
 		return "unknown"
+	}
+}
+
+func (sc StoredConfig) GetFunc() (storedConfigGetFunc, error) {
+	switch sc {
+	case StoredConfigTomID:
+		return StoredConfigRepository.GetStoredConfigDatawayTomID, nil
+	default:
+		return nil, fmt.Errorf(`unexpected stored config "%s"`, sc.String())
 	}
 }
 
