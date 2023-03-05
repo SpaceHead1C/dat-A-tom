@@ -3,15 +3,19 @@ package handlers
 import (
 	"context"
 	"datatom/grpc"
+	"datatom/internal/api"
+	"datatom/internal/domain"
+	"encoding/json"
+	"errors"
 	"github.com/google/uuid"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"net/http"
 )
 
-func RegisterTom(ctx context.Context, gRPCConn *grpc.Connection) (TextResult, error) {
+func RegisterTom(ctx context.Context, gRPCConn *grpc.Connection, man *api.StoredConfigsManager) (TextResult, error) {
 	out := TextResult{Status: http.StatusCreated}
 	if gRPCConn == nil {
-		out.Status = http.StatusUnavailableForLegalReasons
+		out.Status = http.StatusServiceUnavailable
 		out.Payload = "disconnected from dat(A)way service"
 		return out, nil
 	}
@@ -28,6 +32,10 @@ func RegisterTom(ctx context.Context, gRPCConn *grpc.Connection) (TextResult, er
 	}
 	id, err := uuid.FromBytes(pbID.Value)
 	if err != nil {
+		out.Status = http.StatusInternalServerError
+		return out, err
+	}
+	if err := man.Set(ctx, domain.StoredConfigTomID, id); err != nil {
 		out.Status = http.StatusInternalServerError
 		return out, err
 	}

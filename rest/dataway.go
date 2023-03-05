@@ -7,7 +7,7 @@ import (
 
 func newRegisterTomHandler(s *server) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		res, err := handlers.RegisterTom(req.Context(), s.dwGRPCConn)
+		res, err := handlers.RegisterTom(req.Context(), s.dwGRPCConn, s.storedConfigsManager)
 		if err != nil {
 			switch res.Status {
 			case http.StatusBadRequest:
