@@ -18,6 +18,9 @@ type config struct {
 	PostgresDBName   string `conf:"flag:postgres_db_name,env:POSTGRES_DB_NAME" toml:"postgres_db_name" zero:"no"`
 	PostgresUser     string `conf:"flag:postgres_user,env:POSTGRES_USER" toml:"postgres_user" zero:"no"`
 	PostgresPassword string `conf:"flag:postgres_password,env:POSTGRES_PASSWORD" toml:"postgres_password" zero:"no"`
+
+	DatawayGRPCAddress string `conf:"flag:dataway_grpc_address,env:DATAWAY_GRPC_ADDRESS" toml:"dataway_grpc_address"`
+	DatawayGRPCPort    uint   `conf:"flag:dataway_grpc_port,env:DATAWAY_GRPC_PORT" toml:"dataway_grpc_port"`
 }
 
 func newConfig() *config {

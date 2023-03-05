@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"datatom/grpc"
 	"datatom/internal"
 	"datatom/internal/api"
 	"datatom/internal/domain"
@@ -21,15 +22,19 @@ const (
 )
 
 type server struct {
-	logger          *zap.SugaredLogger
-	srv             *http.Server
-	errorHandler    func(error)
-	timeout         time.Duration
-	appInfo         internal.Info
-	refTypeManager  *api.RefTypeManager
-	recordManager   *api.RecordManager
-	propertyManager *api.PropertyManager
-	valueManager    *api.ValueManager
+	logger       *zap.SugaredLogger
+	srv          *http.Server
+	errorHandler func(error)
+	timeout      time.Duration
+
+	dwGRPCConn *grpc.Connection
+	appInfo    internal.Info
+
+	refTypeManager       *api.RefTypeManager
+	recordManager        *api.RecordManager
+	propertyManager      *api.PropertyManager
+	valueManager         *api.ValueManager
+	storedConfigsManager *api.StoredConfigsManager
 }
 
 func (s *server) Serve() error {
@@ -37,15 +42,19 @@ func (s *server) Serve() error {
 }
 
 type Config struct {
-	Logger          *zap.SugaredLogger
-	Port            uint
-	ErrorHandler    func(error)
-	Timeout         time.Duration
-	AppInfo         internal.Info
-	RefTypeManager  *api.RefTypeManager
-	RecordManager   *api.RecordManager
-	PropertyManager *api.PropertyManager
-	ValueManager    *api.ValueManager
+	Logger       *zap.SugaredLogger
+	Port         uint
+	ErrorHandler func(error)
+	Timeout      time.Duration
+
+	AppInfo              internal.Info
+	RefTypeManager       *api.RefTypeManager
+	RecordManager        *api.RecordManager
+	PropertyManager      *api.PropertyManager
+	ValueManager         *api.ValueManager
+	StoredConfigsManager *api.StoredConfigsManager
+
+	DatawayGRPCConnection *grpc.Connection
 }
 
 func NewServer(c Config) (domain.Server, error) {
@@ -75,18 +84,24 @@ func NewServer(c Config) (domain.Server, error) {
 	if c.ValueManager == nil {
 		return nil, fmt.Errorf("value manager must be not nil")
 	}
+	if c.StoredConfigsManager == nil {
+		return nil, fmt.Errorf("stored configs manager must be not nil")
+	}
 	if c.Timeout == 0 {
 		c.Timeout = defaultHTTPServerTimeout
 	}
 	out := &server{
-		logger:          l,
-		errorHandler:    eh,
-		timeout:         c.Timeout,
-		appInfo:         c.AppInfo,
-		refTypeManager:  c.RefTypeManager,
-		recordManager:   c.RecordManager,
-		propertyManager: c.PropertyManager,
-		valueManager:    c.ValueManager,
+		logger:       l,
+		errorHandler: eh,
+		timeout:      c.Timeout,
+		dwGRPCConn:   c.DatawayGRPCConnection,
+		appInfo:      c.AppInfo,
+
+		refTypeManager:       c.RefTypeManager,
+		recordManager:        c.RecordManager,
+		propertyManager:      c.PropertyManager,
+		valueManager:         c.ValueManager,
+		storedConfigsManager: c.StoredConfigsManager,
 	}
 
 	router := chi.NewRouter()
@@ -99,6 +114,7 @@ func NewServer(c Config) (domain.Server, error) {
 	router.Mount("/record", recordRouter(out))
 	router.Mount("/property", propertyRouter(out))
 	router.Mount("/value", valueRouter(out))
+	router.Mount("/dataway", datawayRouter(out))
 
 	out.srv = &http.Server{
 		Addr:         fmt.Sprintf(":%d", c.Port),
@@ -147,6 +163,13 @@ func propertyRouter(s *server) *chi.Mux {
 func valueRouter(s *server) *chi.Mux {
 	r := chi.NewRouter()
 	r.Put("/", newSetValueHandler(s))
+	return r
+}
+
+func datawayRouter(s *server) *chi.Mux {
+	r := chi.NewRouter()
+	r.Post("/tom", newRegisterTomHandler(s))
+	r.Get("/tom", newGetTomIDHandler(s))
 	return r
 }
 

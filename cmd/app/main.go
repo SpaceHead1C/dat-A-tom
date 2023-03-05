@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"datatom/grpc"
 	"datatom/internal"
 	"datatom/internal/adapter/pg"
 	"datatom/internal/api"
@@ -91,15 +92,31 @@ func main() {
 	}
 	l.Info("values manager configured")
 
+	storedConfigsManager, err := api.NewStoredConfigManager(api.StoredConfigsConfig{
+		Repository: repo,
+		Timeout:    time.Second,
+	})
+
+	dwGRPCConn := grpc.NewConnection(grpc.Config{
+		Logger:  l,
+		Address: c.DatawayGRPCAddress,
+		Port:    c.DatawayGRPCPort,
+	})
+
 	restServer, err := rest.NewServer(rest.Config{
-		Logger:          l,
-		Port:            c.RESTPort,
-		Timeout:         time.Second * time.Duration(c.RESTTimeoutSec),
-		AppInfo:         *info,
-		RefTypeManager:  refTypeManager,
-		RecordManager:   recordManager,
-		PropertyManager: propertyManager,
-		ValueManager:    valueManager,
+		Logger:  l,
+		Port:    c.RESTPort,
+		Timeout: time.Second * time.Duration(c.RESTTimeoutSec),
+
+		AppInfo: *info,
+
+		RefTypeManager:       refTypeManager,
+		RecordManager:        recordManager,
+		PropertyManager:      propertyManager,
+		ValueManager:         valueManager,
+		StoredConfigsManager: storedConfigsManager,
+
+		DatawayGRPCConnection: dwGRPCConn,
 	})
 	if err != nil {
 		panic(err.Error())
@@ -113,7 +130,7 @@ func main() {
 	})
 	l.Infof("REST server listens at port: %d", c.RESTPort)
 
-	l.Info("dat(A)tom service is up")
+	l.Infof("%s service is up", internal.ServiceName)
 
 	if err := g.Wait(); err != nil {
 		panic(err.Error())

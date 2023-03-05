@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = "/internal/pb";
+
+package proto;
+
+import "google/protobuf/empty.proto";
+
+service Dataway {
+  rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty) {}
+
+  rpc RegisterNewTom(google.protobuf.Empty) returns (UUID) {}
+}
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Common types and enums
+// ---------------------------------------------------------------------------------------------------------------------
+
+message UUID {
+  bytes value = 1;
+}
