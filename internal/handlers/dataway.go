@@ -42,3 +42,30 @@ func RegisterTom(ctx context.Context, gRPCConn *grpc.Connection, man *api.Stored
 	out.Payload = id.String()
 	return out, nil
 }
+
+func GetTomID(ctx context.Context, man *api.StoredConfigsManager) (Result, error) {
+	out := Result{Status: http.StatusOK}
+	valid := true
+	val, err := man.Get(ctx, domain.StoredConfigTomID)
+	if err != nil {
+		if errors.Is(err, domain.ErrStoredConfigTomIDNotSet) {
+			err = nil
+			valid = false
+		} else {
+			out.Status = http.StatusInternalServerError
+			return out, err
+		}
+	}
+	var id uuid.UUID
+	if err := val.ScanStoredConfigValue(&id); err != nil {
+		out.Status = http.StatusInternalServerError
+		return out, err
+	}
+	b, err := json.Marshal(TomIDToResponseSchema(id, valid))
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		return out, err
+	}
+	out.Payload = b
+	return out, nil
+}
