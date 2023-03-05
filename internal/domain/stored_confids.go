@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"context"
 	"fmt"
 	"github.com/google/uuid"
 )
@@ -18,6 +19,11 @@ func (sc StoredConfig) String() string {
 	default:
 		return "unknown"
 	}
+}
+
+type StoredConfigRepository interface {
+	SetStoredConfigDatawayTomID(context.Context, uuid.UUID) error
+	GetStoredConfigDatawayTomID(context.Context) (StoredConfigValue, error)
 }
 
 type StoredConfigValue interface {
