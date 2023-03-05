@@ -90,3 +90,15 @@ func newTestValueManager(t *testing.T) *api.ValueManager {
 	}
 	return out
 }
+
+func newTestStoredConfigsManager(t *testing.T) *api.StoredConfigsManager {
+	repo := newPgRepo(t)
+	out, err := api.NewStoredConfigManager(api.StoredConfigsConfig{
+		Repository: repo,
+		Timeout:    time.Second,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
