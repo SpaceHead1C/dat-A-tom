@@ -14,3 +14,8 @@ func TomIDToResponseSchema(id uuid.UUID, valid bool) StoredConfigTomIDSchema {
 	}
 	return out
 }
+
+type SubscribeSchema struct {
+	ConsumerID string `json:"consumer_id"`
+	PropertyID string `json:"property_id"`
+}
