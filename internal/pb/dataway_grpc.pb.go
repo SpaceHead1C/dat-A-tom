@@ -25,6 +25,8 @@ const _ = grpc.SupportPackageIsVersion7
 type DatawayClient interface {
 	Ping(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	RegisterNewTom(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*UUID, error)
+	Subscribe(ctx context.Context, in *Subscription, opts ...grpc.CallOption) (*Subscription, error)
+	DeleteSubscription(ctx context.Context, in *Subscription, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type datawayClient struct {
@@ -53,12 +55,32 @@ func (c *datawayClient) RegisterNewTom(ctx context.Context, in *emptypb.Empty, o
 	return out, nil
 }
 
+func (c *datawayClient) Subscribe(ctx context.Context, in *Subscription, opts ...grpc.CallOption) (*Subscription, error) {
+	out := new(Subscription)
+	err := c.cc.Invoke(ctx, "/proto.Dataway/Subscribe", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *datawayClient) DeleteSubscription(ctx context.Context, in *Subscription, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/proto.Dataway/DeleteSubscription", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DatawayServer is the server API for Dataway service.
 // All implementations must embed UnimplementedDatawayServer
 // for forward compatibility
 type DatawayServer interface {
 	Ping(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	RegisterNewTom(context.Context, *emptypb.Empty) (*UUID, error)
+	Subscribe(context.Context, *Subscription) (*Subscription, error)
+	DeleteSubscription(context.Context, *Subscription) (*emptypb.Empty, error)
 	mustEmbedUnimplementedDatawayServer()
 }
 
@@ -71,6 +93,12 @@ func (UnimplementedDatawayServer) Ping(context.Context, *emptypb.Empty) (*emptyp
 }
 func (UnimplementedDatawayServer) RegisterNewTom(context.Context, *emptypb.Empty) (*UUID, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterNewTom not implemented")
+}
+func (UnimplementedDatawayServer) Subscribe(context.Context, *Subscription) (*Subscription, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Subscribe not implemented")
+}
+func (UnimplementedDatawayServer) DeleteSubscription(context.Context, *Subscription) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteSubscription not implemented")
 }
 func (UnimplementedDatawayServer) mustEmbedUnimplementedDatawayServer() {}
 
@@ -121,6 +149,42 @@ func _Dataway_RegisterNewTom_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Dataway_Subscribe_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Subscription)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatawayServer).Subscribe(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Dataway/Subscribe",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatawayServer).Subscribe(ctx, req.(*Subscription))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Dataway_DeleteSubscription_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Subscription)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DatawayServer).DeleteSubscription(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.Dataway/DeleteSubscription",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DatawayServer).DeleteSubscription(ctx, req.(*Subscription))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Dataway_ServiceDesc is the grpc.ServiceDesc for Dataway service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -135,6 +199,14 @@ var Dataway_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterNewTom",
 			Handler:    _Dataway_RegisterNewTom_Handler,
+		},
+		{
+			MethodName: "Subscribe",
+			Handler:    _Dataway_Subscribe_Handler,
+		},
+		{
+			MethodName: "DeleteSubscription",
+			Handler:    _Dataway_DeleteSubscription_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

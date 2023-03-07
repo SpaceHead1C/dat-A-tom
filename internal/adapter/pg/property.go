@@ -70,7 +70,7 @@ func (r *Repository) GetProperty(ctx context.Context, id uuid.UUID) (*Property, 
 	query := `SELECT get_property($1);`
 	if err := r.QueryRowEx(ctx, query, nil, id).Scan(&propertyJSON); err != nil {
 		if IsNoRowsError(err) {
-			return nil, ErrRecordNotFound
+			return nil, ErrPropertyNotFound
 		}
 		return nil, fmt.Errorf("database error: %w, %s", err, query)
 	}
