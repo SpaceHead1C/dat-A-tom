@@ -3,7 +3,7 @@ package pg
 import (
 	"context"
 	. "datatom/internal/domain"
-	. "datatom/pkg/db/pg"
+	"datatom/pkg/db/pg"
 	"encoding/json"
 	"fmt"
 
@@ -16,13 +16,13 @@ func (r *Repository) AddProperty(ctx context.Context, req AddPropertyRequest) (u
 		req.Name,
 		req.Description,
 		TypesToCodes(req.Types),
-		ArrayUUID(req.RefTypeIDs),
-		NullUUID(req.OwnerRefTypeID),
+		pg.ArrayUUID(req.RefTypeIDs),
+		pg.NullUUID(req.OwnerRefTypeID),
 	}
 	query := `SELECT new_property($1, $2, $3, $4, $5);`
 	for attempts := 0; attempts < getUUIDAttemptsThreshold; attempts++ {
-		if err := r.QueryRowEx(ctx, query, nil, args...).Scan(&out); err != nil {
-			if IsNotUniqueError(err) {
+		if err := r.QueryRow(ctx, query, args...).Scan(&out); err != nil {
+			if pg.IsNotUniqueError(err) {
 				continue
 			}
 			if errException, ok := pgExceptionAsDomainError(err); ok {
@@ -52,8 +52,8 @@ func (r *Repository) UpdateProperty(ctx context.Context, req UpdPropertyRequest)
 	}
 	var propertyJSON []byte
 	query := `SELECT update_property($1, $2, $3);`
-	if err := r.QueryRowEx(ctx, query, nil, args...).Scan(&propertyJSON); err != nil {
-		if IsNoRowsError(err) {
+	if err := r.QueryRow(ctx, query, args...).Scan(&propertyJSON); err != nil {
+		if pg.IsNoRowsError(err) {
 			return nil, ErrPropertyNotFound
 		}
 		return nil, fmt.Errorf("database error: %w, %s", err, query)
@@ -68,8 +68,8 @@ func (r *Repository) UpdateProperty(ctx context.Context, req UpdPropertyRequest)
 func (r *Repository) GetProperty(ctx context.Context, id uuid.UUID) (*Property, error) {
 	var propertyJSON []byte
 	query := `SELECT get_property($1);`
-	if err := r.QueryRowEx(ctx, query, nil, id).Scan(&propertyJSON); err != nil {
-		if IsNoRowsError(err) {
+	if err := r.QueryRow(ctx, query, id).Scan(&propertyJSON); err != nil {
+		if pg.IsNoRowsError(err) {
 			return nil, ErrPropertyNotFound
 		}
 		return nil, fmt.Errorf("database error: %w, %s", err, query)

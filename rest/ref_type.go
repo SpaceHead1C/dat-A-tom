@@ -11,7 +11,7 @@ import (
 )
 
 func newAddRefTypeHandler(s *server) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
 		b, err := io.ReadAll(req.Body)
 		if err != nil {
 			s.textResp(w, http.StatusInternalServerError, "read body error")
@@ -38,11 +38,11 @@ func newAddRefTypeHandler(s *server) http.HandlerFunc {
 		}
 		w.Header().Set("Location", fmt.Sprintf("%s/%s", req.URL.String(), res.Payload))
 		s.textResp(w, res.Status, res.Payload)
-	})
+	}
 }
 
 func newUpdRefTypeHandler(s *server) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
 		b, err := io.ReadAll(req.Body)
 		if err != nil {
 			s.textResp(w, http.StatusInternalServerError, "read body error")
@@ -69,11 +69,11 @@ func newUpdRefTypeHandler(s *server) http.HandlerFunc {
 			return
 		}
 		s.emptyResp(w, res.Status)
-	})
+	}
 }
 
 func newPatchRefTypeHandler(s *server) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
 		b, err := io.ReadAll(req.Body)
 		if err != nil {
 			s.textResp(w, http.StatusInternalServerError, "read body error")
@@ -100,11 +100,11 @@ func newPatchRefTypeHandler(s *server) http.HandlerFunc {
 			return
 		}
 		s.jsonResp(w, res.Status, res.Payload)
-	})
+	}
 }
 
 func newGetRefTypeHandler(s *server) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
 		res, err := handlers.GetRefType(req.Context(), s.refTypeManager, chi.URLParam(req, "id"))
 		if err != nil {
 			switch res.Status {
@@ -119,5 +119,5 @@ func newGetRefTypeHandler(s *server) http.HandlerFunc {
 			return
 		}
 		s.jsonResp(w, res.Status, res.Payload)
-	})
+	}
 }

@@ -1,11 +1,8 @@
 package pg
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
-
-	_ "github.com/jackc/pgx/stdlib"
+	"github.com/jackc/pgx/v5"
 )
 
 type SSLMode uint
@@ -38,16 +35,8 @@ type Config struct {
 	SSLMode      SSLMode
 }
 
-type DB struct {
-	*sql.DB
-}
-
-func NewDB(ctx context.Context, c Config) (*DB, error) {
-	db, err := sql.Open("pgx", connectionString(c))
-	if err != nil {
-		return nil, err
-	}
-	return &DB{db}, nil
+func NewConnConfig(c Config) (*pgx.ConnConfig, error) {
+	return pgx.ParseConfig(connectionString(c))
 }
 
 func connectionString(c Config) string {

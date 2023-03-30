@@ -10,7 +10,7 @@ import (
 
 func (r *Repository) SetStoredConfigDatawayTomID(ctx context.Context, value uuid.UUID) error {
 	query := `SELECT set_config_dataway_tom_id($1);`
-	if _, err := r.ExecEx(ctx, query, nil, pg.NullUUID(value)); err != nil {
+	if _, err := r.Exec(ctx, query, pg.NullUUID(value)); err != nil {
 		return fmt.Errorf("database error: %w, %s\"", err, query)
 	}
 	return nil
@@ -20,7 +20,7 @@ func (r *Repository) GetStoredConfigDatawayTomID(ctx context.Context) (StoredCon
 	var id uuid.NullUUID
 	out := StoredConfigUUID{Value: uuid.Nil}
 	query := `SELECT get_config_dataway_tom_id();`
-	if err := r.QueryRowEx(ctx, query, nil).Scan(&id); err != nil {
+	if err := r.QueryRow(ctx, query).Scan(&id); err != nil {
 		return out, fmt.Errorf("database error: %w, %s\"", err, query)
 	}
 	if !id.Valid {

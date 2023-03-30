@@ -3,7 +3,7 @@ package pg
 import (
 	"context"
 	. "datatom/internal/domain"
-	. "datatom/pkg/db/pg"
+	"datatom/pkg/db/pg"
 	"encoding/json"
 	"fmt"
 
@@ -16,12 +16,12 @@ func (r *Repository) AddRecord(ctx context.Context, req AddRecordRequest) (uuid.
 		req.Name,
 		req.Description,
 		req.DeletionMark,
-		NullUUID(req.ReferenceTypeID),
+		pg.NullUUID(req.ReferenceTypeID),
 	}
 	query := `SELECT new_record($1, $2, $3, $4);`
 	for attempts := 0; attempts < getUUIDAttemptsThreshold; attempts++ {
-		if err := r.QueryRowEx(ctx, query, nil, args...).Scan(&out); err != nil {
-			if IsNotUniqueError(err) {
+		if err := r.QueryRow(ctx, query, args...).Scan(&out); err != nil {
+			if pg.IsNotUniqueError(err) {
 				continue
 			}
 			return out, fmt.Errorf("database error: %w, %s", err, query)
@@ -52,8 +52,8 @@ func (r *Repository) UpdateRecord(ctx context.Context, req UpdRecordRequest) (*R
 	}
 	var recordJSON []byte
 	query := `SELECT * FROM update_record($1, $2, $3, $4);`
-	if err := r.QueryRowEx(ctx, query, nil, args...).Scan(&recordJSON); err != nil {
-		if IsNoRowsError(err) {
+	if err := r.QueryRow(ctx, query, args...).Scan(&recordJSON); err != nil {
+		if pg.IsNoRowsError(err) {
 			return nil, ErrRecordNotFound
 		}
 		return nil, fmt.Errorf("database error: %w, %s", err, query)
@@ -68,8 +68,8 @@ func (r *Repository) UpdateRecord(ctx context.Context, req UpdRecordRequest) (*R
 func (r *Repository) GetRecord(ctx context.Context, id uuid.UUID) (*Record, error) {
 	var recordJSON []byte
 	query := `SELECT * FROM get_record($1);`
-	if err := r.QueryRowEx(ctx, query, nil, id).Scan(&recordJSON); err != nil {
-		if IsNoRowsError(err) {
+	if err := r.QueryRow(ctx, query, id).Scan(&recordJSON); err != nil {
+		if pg.IsNoRowsError(err) {
 			return nil, ErrRecordNotFound
 		}
 		return nil, fmt.Errorf("database error: %w, %s", err, query)
