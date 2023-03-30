@@ -9,7 +9,7 @@ import (
 )
 
 func newSetValueHandler(s *server) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	return func(w http.ResponseWriter, req *http.Request) {
 		b, err := io.ReadAll(req.Body)
 		if err != nil {
 			s.textResp(w, http.StatusInternalServerError, "read body error")
@@ -35,5 +35,5 @@ func newSetValueHandler(s *server) http.HandlerFunc {
 			return
 		}
 		s.emptyResp(w, res.Status)
-	})
+	}
 }

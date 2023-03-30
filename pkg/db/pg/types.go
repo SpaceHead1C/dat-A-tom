@@ -16,7 +16,7 @@ func ArrayUUID(in []uuid.UUID) [][16]byte {
 	}
 	out := make([][16]byte, 0, len(in))
 	for _, v := range in {
-		out = append(out, [16]byte(v))
+		out = append(out, v)
 	}
 	return out
 }
