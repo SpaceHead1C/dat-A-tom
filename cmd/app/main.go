@@ -30,8 +30,7 @@ func main() {
 	info := internal.NewInfo(c.Title, c.Description)
 	info.SetVersion(0, 1, 0)
 
-	dbCtx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	db, err := pkgpg.NewDB(dbCtx, pkgpg.Config{
+	dbCC, err := pkgpg.NewConnConfig(pkgpg.Config{
 		Address:      c.PostgresAddress,
 		Port:         c.PostgresPort,
 		User:         c.PostgresUser,
@@ -39,22 +38,21 @@ func main() {
 		DatabaseName: c.PostgresDBName,
 	})
 	if err != nil {
-		cancel()
 		l.Fatal(err.Error())
 	}
+	if err := migrations.UpMigrations(dbCC); err != nil {
+		l.Fatal(err.Error())
+	}
+	dbCtx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	repo, err := pg.NewRepository(dbCtx, pg.Config{
+		ConnectConfig: dbCC,
+		Logger:        l,
+	})
 	cancel()
-	defer db.Close()
-	l.Info("database connected")
-
-	if err := migrations.UpMigrations(db); err != nil {
-		l.Fatal(err.Error())
-	}
-
-	repo, err := pg.NewRepository(db, l)
 	if err != nil {
 		l.Fatal(err.Error())
 	}
-	defer repo.CloseConn(db)
+	defer repo.Close(context.Background())
 	l.Info("repository configured")
 
 	refTypeManager, err := api.NewRefTypeManager(api.RefTypeConfig{

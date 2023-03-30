@@ -3,7 +3,7 @@ package pg
 import (
 	"context"
 	. "datatom/internal/domain"
-	. "datatom/pkg/db/pg"
+	"datatom/pkg/db/pg"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -17,8 +17,8 @@ func (r *Repository) AddRefType(ctx context.Context, req AddRefTypeRequest) (uui
 	}
 	query := `SELECT new_ref_type($1, $2);`
 	for attempts := 0; attempts < getUUIDAttemptsThreshold; attempts++ {
-		if err := r.QueryRowEx(ctx, query, nil, args...).Scan(&out); err != nil {
-			if IsNotUniqueError(err) {
+		if err := r.QueryRow(ctx, query, args...).Scan(&out); err != nil {
+			if pg.IsNotUniqueError(err) {
 				continue
 			}
 			return out, fmt.Errorf("database error: %w, %s", err, query)
@@ -45,8 +45,8 @@ func (r *Repository) UpdateRefType(ctx context.Context, req UpdRefTypeRequest) (
 		return r.GetRefType(ctx, req.ID)
 	}
 	query := `SELECT * FROM update_ref_type($1, $2, $3);`
-	if err := r.QueryRowEx(ctx, query, nil, args...).Scan(&out.ID, &out.Name, &out.Description); err != nil {
-		if IsNoRowsError(err) {
+	if err := r.QueryRow(ctx, query, args...).Scan(&out.ID, &out.Name, &out.Description); err != nil {
+		if pg.IsNoRowsError(err) {
 			return nil, ErrRefTypeNotFound
 		}
 		return nil, fmt.Errorf("database error: %w, %s", err, query)
@@ -57,8 +57,8 @@ func (r *Repository) UpdateRefType(ctx context.Context, req UpdRefTypeRequest) (
 func (r *Repository) GetRefType(ctx context.Context, id uuid.UUID) (*RefType, error) {
 	query := `SELECT * FROM get_ref_type($1);`
 	var out RefType
-	if err := r.QueryRowEx(ctx, query, nil, id).Scan(&out.ID, &out.Name, &out.Description); err != nil {
-		if IsNoRowsError(err) {
+	if err := r.QueryRow(ctx, query, id).Scan(&out.ID, &out.Name, &out.Description); err != nil {
+		if pg.IsNoRowsError(err) {
 			return nil, ErrRefTypeNotFound
 		}
 		return nil, fmt.Errorf("database error: %w, %s", err, query)
