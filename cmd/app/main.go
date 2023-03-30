@@ -8,8 +8,9 @@ import (
 	"datatom/internal/api"
 	"datatom/internal/migrations"
 	pkgpg "datatom/pkg/db/pg"
-	"datatom/pkg/log"
+	pkglog "datatom/pkg/log"
 	"datatom/rest"
+	"log"
 	"os"
 	"time"
 
@@ -19,11 +20,11 @@ import (
 func main() {
 	c := newConfig()
 	if err := parse(os.Args[1:], c); err != nil {
-		panic(err.Error())
+		log.Fatal(err.Error())
 	}
-	l, err := log.NewLogger()
+	l, err := pkglog.NewLogger()
 	if err != nil {
-		panic(err.Error())
+		log.Fatal(err.Error())
 	}
 
 	info := internal.NewInfo(c.Title, c.Description)
@@ -39,19 +40,19 @@ func main() {
 	})
 	if err != nil {
 		cancel()
-		panic(err.Error())
+		l.Fatal(err.Error())
 	}
 	cancel()
 	defer db.Close()
 	l.Info("database connected")
 
 	if err := migrations.UpMigrations(db); err != nil {
-		panic(err.Error())
+		l.Fatal(err.Error())
 	}
 
 	repo, err := pg.NewRepository(db, l)
 	if err != nil {
-		panic(err.Error())
+		l.Fatal(err.Error())
 	}
 	defer repo.CloseConn(db)
 	l.Info("repository configured")
@@ -61,7 +62,7 @@ func main() {
 		Timeout:    time.Second,
 	})
 	if err != nil {
-		panic(err.Error())
+		l.Fatal(err.Error())
 	}
 	l.Info("reference types manager configured")
 
@@ -70,7 +71,7 @@ func main() {
 		Timeout:    time.Second,
 	})
 	if err != nil {
-		panic(err.Error())
+		l.Fatal(err.Error())
 	}
 	l.Info("records manager configured")
 
@@ -79,7 +80,7 @@ func main() {
 		Timeout:    time.Second,
 	})
 	if err != nil {
-		panic(err.Error())
+		l.Fatal(err.Error())
 	}
 	l.Info("properties manager configured")
 
@@ -88,7 +89,7 @@ func main() {
 		Timeout:    time.Second,
 	})
 	if err != nil {
-		panic(err.Error())
+		l.Fatal(err.Error())
 	}
 	l.Info("values manager configured")
 
@@ -119,7 +120,7 @@ func main() {
 		DatawayGRPCConnection: dwGRPCConn,
 	})
 	if err != nil {
-		panic(err.Error())
+		l.Fatal(err.Error())
 	}
 
 	g, _ := errgroup.WithContext(context.Background())
@@ -133,6 +134,6 @@ func main() {
 	l.Infof("%s service is up", internal.ServiceName)
 
 	if err := g.Wait(); err != nil {
-		panic(err.Error())
+		l.Fatal(err.Error())
 	}
 }
