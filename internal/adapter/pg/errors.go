@@ -4,7 +4,7 @@ import (
 	. "datatom/internal/domain"
 	"fmt"
 
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 var (
@@ -31,7 +31,7 @@ func pgExceptionAsDomainError(err error) (error, bool) {
 	if err == nil {
 		return nil, false
 	}
-	pgErr, ok := err.(pgx.PgError)
+	pgErr, ok := err.(*pgconn.PgError)
 	if !ok {
 		return err, false
 	}

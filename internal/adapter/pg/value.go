@@ -3,7 +3,7 @@ package pg
 import (
 	"context"
 	. "datatom/internal/domain"
-	. "datatom/pkg/db/pg"
+	"datatom/pkg/db/pg"
 	"encoding/json"
 	"fmt"
 )
@@ -15,14 +15,14 @@ func (r *Repository) SetValue(ctx context.Context, req SetValueRequest) (*Value,
 	}
 	var valueJSON []byte
 	args := []any{
-		NullUUID(req.RecordID),
-		NullUUID(req.PropertyID),
+		pg.NullUUID(req.RecordID),
+		pg.NullUUID(req.PropertyID),
 		req.Type.Code(),
-		NullUUID(req.RefTypeID),
+		pg.NullUUID(req.RefTypeID),
 		string(value),
 	}
 	query := `SELECT set_value($1, $2, $3, $4, $5);`
-	if err := r.QueryRowEx(ctx, query, nil, args...).Scan(&valueJSON); err != nil {
+	if err := r.QueryRow(ctx, query, args...).Scan(&valueJSON); err != nil {
 		if errException, ok := pgExceptionAsDomainError(err); ok {
 			return nil, errException
 		}
