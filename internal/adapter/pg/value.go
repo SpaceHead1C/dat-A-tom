@@ -34,3 +34,31 @@ func (r *Repository) SetValue(ctx context.Context, req SetValueRequest) (*Value,
 	}
 	return schema.Value()
 }
+
+func (r *Repository) ChangedValues(ctx context.Context) ([]Value, error) {
+	query := `SELECT * FROM get_changed_values();`
+	rows, err := r.Query(ctx, query)
+	if err != nil {
+		if pg.IsNoRowsError(err) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("database error: %w, %s", err, query)
+	}
+	var out []Value
+	for rows.Next() {
+		var valueJSON []byte
+		if err := rows.Scan(&valueJSON); err != nil {
+			return nil, fmt.Errorf("database scan error: %w, %s", err, query)
+		}
+		var schema ValueSchema
+		if err := json.Unmarshal(valueJSON, &schema); err != nil {
+			return nil, fmt.Errorf("db result unmarshal error: %s, %s", err, valueJSON)
+		}
+		value, err := schema.Value()
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *value)
+	}
+	return out, nil
+}

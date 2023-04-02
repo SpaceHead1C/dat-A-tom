@@ -11,6 +11,7 @@ import (
 
 type ValueRepository interface {
 	SetValue(context.Context, SetValueRequest) (*Value, error)
+	ChangedValues(context.Context) ([]Value, error)
 }
 
 type Value struct {
