@@ -96,6 +96,18 @@ func newTestValueManager(t *testing.T) *api.ValueManager {
 	return out
 }
 
+func newTestSentDataManager(t *testing.T) *api.SentDataManager {
+	repo := newPgRepo(t)
+	out, err := api.NewSentDataManager(api.SentDataConfig{
+		Repository: repo,
+		Timeout:    time.Second,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
 func newTestStoredConfigsManager(t *testing.T) *api.StoredConfigsManager {
 	repo := newPgRepo(t)
 	out, err := api.NewStoredConfigManager(api.StoredConfigsConfig{
