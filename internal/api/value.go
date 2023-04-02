@@ -33,3 +33,9 @@ func (vm *ValueManager) Set(ctx context.Context, req SetValueRequest) (*Value, e
 	defer cancel()
 	return vm.Repository.SetValue(ctx, req)
 }
+
+func (vm *ValueManager) ChangedValues(ctx context.Context) ([]Value, error) {
+	ctx, cancel := context.WithTimeout(ctx, vm.Timeout)
+	defer cancel()
+	return vm.Repository.ChangedValues(ctx)
+}
