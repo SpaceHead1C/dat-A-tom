@@ -10,6 +10,7 @@ var (
 	ErrRecordNotFound   = fmt.Errorf("record %w", ErrNotFound)
 	ErrRefTypeNotFound  = fmt.Errorf("reference type %w", ErrNotFound)
 	ErrPropertyNotFound = fmt.Errorf("property %w", ErrNotFound)
+	ErrSentDataNotFound = fmt.Errorf("sent data %w", ErrNotFound)
 
 	ErrStoredConfigTomIDNotSet = errors.New("tom ID not set")
 
