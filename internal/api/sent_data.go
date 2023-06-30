@@ -28,6 +28,12 @@ func NewSentDataManager(c SentDataConfig) (*SentDataManager, error) {
 	return &SentDataManager{c}, nil
 }
 
+func (sdm *SentDataManager) Set(ctx context.Context, req SetSentDataRequest) (*SentData, error) {
+	ctx, cancel := context.WithTimeout(ctx, sdm.Timeout)
+	defer cancel()
+	return sdm.Repository.SetSentData(ctx, req)
+}
+
 func (sdm *SentDataManager) Get(ctx context.Context, req GetSentDataRequest) (*SentData, error) {
 	ctx, cancel := context.WithTimeout(ctx, sdm.Timeout)
 	defer cancel()
