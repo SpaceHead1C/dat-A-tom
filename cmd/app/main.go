@@ -6,10 +6,13 @@ import (
 	"datatom/internal"
 	"datatom/internal/adapter/pg"
 	"datatom/internal/api"
+	"datatom/internal/handlers"
 	"datatom/internal/migrations"
+	"datatom/pkg/amq"
 	pkgpg "datatom/pkg/db/pg"
 	pkglog "datatom/pkg/log"
 	"datatom/rest"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"os"
 	"time"
@@ -121,7 +124,23 @@ func main() {
 		l.Fatal(err.Error())
 	}
 
+	amqConn, err := amq.NewConnection(amq.ConnectionConfig{
+		Logger:   l,
+		Address:  c.RMQAddress,
+		Port:     c.RMQPort,
+		User:     c.RMQUser,
+		Password: c.RMQPassword,
+		VHost:    c.RMQVHost,
+	})
+	if err != nil {
+		l.Fatalf("rmq dial error: %s", err)
+	}
+	if amqConn != nil {
+		defer amqConn.Close()
+	}
+
 	g, _ := errgroup.WithContext(context.Background())
+
 	g.Go(func() error {
 		err := restServer.Serve()
 		l.Errorln("REST server error:", err.Error())
