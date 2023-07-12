@@ -16,6 +16,7 @@ import (
 const (
 	deliveryTypeValue    = "value"
 	deliveryTypeProperty = "property"
+	deliveryTypeRecord   = "record"
 )
 
 type ConsumeHandlerConfig struct {
@@ -23,6 +24,7 @@ type ConsumeHandlerConfig struct {
 	Timeout         time.Duration
 	ValueManager    *api.ValueManager
 	PropertyManager *api.PropertyManager
+	RecordManager   *api.RecordManager
 }
 
 func NewConsumeHandler(c ConsumeHandlerConfig) rmq.Handler {
@@ -42,6 +44,8 @@ func NewConsumeHandler(c ConsumeHandlerConfig) rmq.Handler {
 			isInnerError, err = processMessageWithValue(ctx, c.ValueManager, d.Body)
 		case deliveryTypeProperty:
 			isInnerError, err = processMessageWithProperty(ctx, c.PropertyManager, d.Body)
+		case deliveryTypeRecord:
+			isInnerError, err = processMessageWithRecord(ctx, c.RecordManager, d.Body)
 		default:
 			err = fmt.Errorf("unexpected delivery type %s", d.Type)
 		}
@@ -53,7 +57,6 @@ func NewConsumeHandler(c ConsumeHandlerConfig) rmq.Handler {
 			} else {
 				c.Logger.Infof(template, d.MessageId, err)
 			}
-
 		}
 		return action
 	}
@@ -80,6 +83,21 @@ func processMessageWithProperty(ctx context.Context, man *api.PropertyManager, m
 		return false, err
 	}
 	req, err := schema.UpdPropertyRequest()
+	if err != nil {
+		return false, err
+	}
+	if _, err := man.Update(ctx, req); err != nil {
+		return !errors.Is(err, domain.ErrNotFound), err
+	}
+	return false, nil
+}
+
+func processMessageWithRecord(ctx context.Context, man *api.RecordManager, message []byte) (bool, error) {
+	var schema UpdRecordRequestSchema
+	if err := json.Unmarshal(message, &schema); err != nil {
+		return false, err
+	}
+	req, err := schema.UpdRecordRequest()
 	if err != nil {
 		return false, err
 	}

@@ -168,6 +168,7 @@ func main() {
 				Timeout:         time.Second * 2,
 				ValueManager:    valueManager,
 				PropertyManager: propertyManager,
+				RecordManager:   recordManager,
 			}),
 			QueueArgs: amq.NewQueueArgs().AddTypeArg(amqp.QueueTypeClassic).AddDLEArg(c.RMQDLE),
 		}); err != nil {
