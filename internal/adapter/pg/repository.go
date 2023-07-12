@@ -2,6 +2,7 @@ package pg
 
 import (
 	"context"
+	"datatom/pkg/log"
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
@@ -25,7 +26,7 @@ func NewRepository(ctx context.Context, c Config) (*Repository, error) {
 		return nil, fmt.Errorf("connect config is nil")
 	}
 	if c.Logger == nil {
-		c.Logger = zap.L().Sugar()
+		c.Logger = log.GlobalLogger()
 	}
 	conn, err := pgx.ConnectConfig(ctx, c.ConnectConfig)
 	if err != nil {
