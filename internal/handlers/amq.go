@@ -1,13 +1,17 @@
 package handlers
 
 import (
+	"context"
 	"datatom/internal/api"
 	"datatom/pkg/log"
+	"encoding/json"
 	"fmt"
 	rmq "github.com/wagslane/go-rabbitmq"
 	"go.uber.org/zap"
 	"time"
 )
+
+const deliveryTypeValue = "value"
 
 type ConsumeHandlerConfig struct {
 	Logger       *zap.SugaredLogger
@@ -23,8 +27,12 @@ func NewConsumeHandler(c ConsumeHandlerConfig) rmq.Handler {
 		if c.Logger == nil {
 			c.Logger = log.GlobalLogger()
 		}
+		ctx, cancel := context.WithTimeout(context.Background(), c.Timeout)
+		defer cancel()
 		var err error
 		switch d.Type {
+		case deliveryTypeValue:
+			err = processMessageWithValue(ctx, c.ValueManager, d.Body)
 		default:
 			err = fmt.Errorf("unexpected delivery type %s", d.Type)
 		}
@@ -34,4 +42,19 @@ func NewConsumeHandler(c ConsumeHandlerConfig) rmq.Handler {
 		}
 		return action
 	}
+}
+
+func processMessageWithValue(ctx context.Context, man *api.ValueManager, message []byte) error {
+	var schema SetValueRequestSchema
+	if err := json.Unmarshal(message, &schema); err != nil {
+		return err
+	}
+	req, err := schema.SetValueRequest()
+	if err != nil {
+		return err
+	}
+	if _, err := man.Set(ctx, req); err != nil {
+		return err
+	}
+	return nil
 }
