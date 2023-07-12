@@ -137,6 +137,7 @@ func main() {
 	}
 	if amqConn != nil {
 		defer amqConn.Close()
+		l.Infoln("RMQ connection established")
 	}
 
 	g, _ := errgroup.WithContext(context.Background())
@@ -147,6 +148,27 @@ func main() {
 		return err
 	})
 	l.Infof("REST server listens at port: %d", c.RESTPort)
+
+	g.Go(func() error {
+		if amqConn == nil {
+			return nil
+		}
+		if err := amq.RunNewConsumer(amq.ConsumerConfig{
+			Logger: l,
+			Conn:   amqConn,
+			Queue:  c.RMQConsumeQueue,
+			Handler: handlers.NewConsumeHandler(handlers.ConsumeHandlerConfig{
+				Logger:       l,
+				Timeout:      time.Second * 2,
+				ValueManager: valueManager,
+			}),
+			QueueArgs: amq.NewQueueArgs().AddTypeArg(amqp.QueueTypeClassic).AddDLEArg(c.RMQDLE),
+		}); err != nil {
+			l.Errorf("rmq run consuming error: %s", err)
+			return err
+		}
+		return nil
+	})
 
 	l.Infof("%s service is up", internal.ServiceName)
 
