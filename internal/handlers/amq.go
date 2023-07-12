@@ -11,12 +11,16 @@ import (
 	"time"
 )
 
-const deliveryTypeValue = "value"
+const (
+	deliveryTypeValue    = "value"
+	deliveryTypeProperty = "property"
+)
 
 type ConsumeHandlerConfig struct {
-	Logger       *zap.SugaredLogger
-	Timeout      time.Duration
-	ValueManager *api.ValueManager
+	Logger          *zap.SugaredLogger
+	Timeout         time.Duration
+	ValueManager    *api.ValueManager
+	PropertyManager *api.PropertyManager
 }
 
 func NewConsumeHandler(c ConsumeHandlerConfig) rmq.Handler {
@@ -33,6 +37,8 @@ func NewConsumeHandler(c ConsumeHandlerConfig) rmq.Handler {
 		switch d.Type {
 		case deliveryTypeValue:
 			err = processMessageWithValue(ctx, c.ValueManager, d.Body)
+		case deliveryTypeProperty:
+			err = processMessageWithProperty(ctx, c.PropertyManager, d.Body)
 		default:
 			err = fmt.Errorf("unexpected delivery type %s", d.Type)
 		}
@@ -54,6 +60,21 @@ func processMessageWithValue(ctx context.Context, man *api.ValueManager, message
 		return err
 	}
 	if _, err := man.Set(ctx, req); err != nil {
+		return err
+	}
+	return nil
+}
+
+func processMessageWithProperty(ctx context.Context, man *api.PropertyManager, message []byte) error {
+	var schema UpdPropertyRequestSchema
+	if err := json.Unmarshal(message, &schema); err != nil {
+		return err
+	}
+	req, err := schema.UpdPropertyRequest()
+	if err != nil {
+		return err
+	}
+	if _, err := man.Update(ctx, req); err != nil {
 		return err
 	}
 	return nil

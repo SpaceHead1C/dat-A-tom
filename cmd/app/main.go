@@ -164,9 +164,10 @@ func main() {
 			Conn:   amqConn,
 			Queue:  c.RMQConsumeQueue,
 			Handler: handlers.NewConsumeHandler(handlers.ConsumeHandlerConfig{
-				Logger:       l,
-				Timeout:      time.Second * 2,
-				ValueManager: valueManager,
+				Logger:          l,
+				Timeout:         time.Second * 2,
+				ValueManager:    valueManager,
+				PropertyManager: propertyManager,
 			}),
 			QueueArgs: amq.NewQueueArgs().AddTypeArg(amqp.QueueTypeClassic).AddDLEArg(c.RMQDLE),
 		}); err != nil {
