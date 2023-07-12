@@ -20,6 +20,12 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+const (
+	versionMajor = 0
+	versionMinor = 1
+	versionPatch = 0
+)
+
 func main() {
 	c := newConfig()
 	if err := parse(os.Args[1:], c); err != nil {
@@ -31,7 +37,7 @@ func main() {
 	}
 
 	info := internal.NewInfo(c.Title, c.Description)
-	info.SetVersion(0, 1, 0)
+	info.SetVersion(versionMajor, versionMinor, versionPatch)
 
 	dbCC, err := pkgpg.NewConnConfig(pkgpg.Config{
 		Address:      c.PostgresAddress,
