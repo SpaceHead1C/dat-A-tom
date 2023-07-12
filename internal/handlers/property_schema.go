@@ -52,7 +52,7 @@ func (s AddPropertyRequestSchema) AddPropertyRequest() (domain.AddPropertyReques
 		}
 		out.OwnerRefTypeID = ortID
 	}
-	
+
 	if len(unknownTypes) > 0 {
 		return out, unknownTypes, nil
 	}

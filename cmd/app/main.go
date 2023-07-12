@@ -6,15 +6,24 @@ import (
 	"datatom/internal"
 	"datatom/internal/adapter/pg"
 	"datatom/internal/api"
+	"datatom/internal/handlers"
 	"datatom/internal/migrations"
+	"datatom/pkg/amq"
 	pkgpg "datatom/pkg/db/pg"
 	pkglog "datatom/pkg/log"
 	"datatom/rest"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"os"
 	"time"
 
 	"golang.org/x/sync/errgroup"
+)
+
+const (
+	versionMajor = 0
+	versionMinor = 1
+	versionPatch = 0
 )
 
 func main() {
@@ -28,7 +37,7 @@ func main() {
 	}
 
 	info := internal.NewInfo(c.Title, c.Description)
-	info.SetVersion(0, 1, 0)
+	info.SetVersion(versionMajor, versionMinor, versionPatch)
 
 	dbCC, err := pkgpg.NewConnConfig(pkgpg.Config{
 		Address:      c.PostgresAddress,
@@ -121,13 +130,53 @@ func main() {
 		l.Fatal(err.Error())
 	}
 
+	amqConn, err := amq.NewConnection(amq.ConnectionConfig{
+		Logger:   l,
+		Address:  c.RMQAddress,
+		Port:     c.RMQPort,
+		User:     c.RMQUser,
+		Password: c.RMQPassword,
+		VHost:    c.RMQVHost,
+	})
+	if err != nil {
+		l.Fatalf("rmq dial error: %s", err)
+	}
+	if amqConn != nil {
+		defer amqConn.Close()
+		l.Infoln("RMQ connection established")
+	}
+
 	g, _ := errgroup.WithContext(context.Background())
+
 	g.Go(func() error {
 		err := restServer.Serve()
 		l.Errorln("REST server error:", err.Error())
 		return err
 	})
 	l.Infof("REST server listens at port: %d", c.RESTPort)
+
+	g.Go(func() error {
+		if amqConn == nil {
+			return nil
+		}
+		if err := amq.RunNewConsumer(amq.ConsumerConfig{
+			Logger: l,
+			Conn:   amqConn,
+			Queue:  c.RMQConsumeQueue,
+			Handler: handlers.NewConsumeHandler(handlers.ConsumeHandlerConfig{
+				Logger:          l,
+				Timeout:         time.Second * 2,
+				ValueManager:    valueManager,
+				PropertyManager: propertyManager,
+				RecordManager:   recordManager,
+			}),
+			QueueArgs: amq.NewQueueArgs().AddTypeArg(amqp.QueueTypeClassic).AddDLEArg(c.RMQDLE),
+		}); err != nil {
+			l.Errorf("rmq run consuming error: %s", err)
+			return err
+		}
+		return nil
+	})
 
 	l.Infof("%s service is up", internal.ServiceName)
 

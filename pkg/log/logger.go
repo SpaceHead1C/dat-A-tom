@@ -9,3 +9,7 @@ func NewLogger() (*zap.SugaredLogger, error) {
 	}
 	return l.Sugar(), nil
 }
+
+func GlobalLogger() *zap.SugaredLogger {
+	return zap.L().Sugar()
+}
