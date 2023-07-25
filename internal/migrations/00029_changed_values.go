@@ -10,8 +10,7 @@ func init() {
 }
 
 func up00029(tx *sql.Tx) error {
-	query := `
--- Get function for changed values
+	query := `-- Get function for changed values
 CREATE FUNCTION get_changed_values() RETURNS SETOF json AS $get_changed_values$
 	BEGIN
 		RETURN QUERY
