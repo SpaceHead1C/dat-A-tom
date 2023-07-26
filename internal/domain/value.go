@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"datatom/pkg/db"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -17,6 +18,10 @@ type ValueRepository interface {
 	ChangedValues(context.Context) ([]Value, error)
 	GetValueSentStateForUpdate(context.Context, GetValueRequest, db.Transaction) (*ValueSentState, error)
 	SetSentValue(context.Context, ValueSentState, db.Transaction) (*ValueSentState, error)
+}
+
+type ValueBroker interface {
+	SendValue(context.Context, SendValueRequest) error
 }
 
 type ValueSentState struct {
@@ -47,6 +52,13 @@ type SetValueRequest struct {
 	Type       Type
 	RefTypeID  uuid.UUID
 	Value      any
+}
+
+type SendValueRequest struct {
+	Value
+	TomID       uuid.UUID
+	Exchange    string
+	RoutingKeys []string
 }
 
 type ValueJSONSchema struct {
