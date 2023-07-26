@@ -13,6 +13,7 @@ const DeliveryTypeValue = "value"
 
 type ValueRepository interface {
 	SetValue(context.Context, SetValueRequest) (*Value, error)
+	GetValue(context.Context, GetValueRequest) (*Value, error)
 	ChangedValues(context.Context) ([]Value, error)
 }
 
@@ -24,6 +25,11 @@ type Value struct {
 	Value      any
 	Sum        string
 	ChangeAt   time.Time
+}
+
+type GetValueRequest struct {
+	RecordID   uuid.UUID
+	PropertyID uuid.UUID
 }
 
 type SetValueRequest struct {

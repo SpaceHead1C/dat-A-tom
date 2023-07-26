@@ -35,6 +35,26 @@ func (r *Repository) SetValue(ctx context.Context, req SetValueRequest) (*Value,
 	return schema.Value()
 }
 
+func (r *Repository) GetValue(ctx context.Context, req GetValueRequest) (*Value, error) {
+	var valueJSON []byte
+	args := []any{
+		req.RecordID,
+		req.PropertyID,
+	}
+	query := `SELECT get_value($1, $2);`
+	if err := r.QueryRow(ctx, query, args...).Scan(&valueJSON); err != nil {
+		if pg.IsNoRowsError(err) {
+			return nil, ErrValueNotFound
+		}
+		return nil, fmt.Errorf("database error: %w, %s", err, query)
+	}
+	var schema ValueSchema
+	if err := json.Unmarshal(valueJSON, &schema); err != nil {
+		return nil, fmt.Errorf("db result unmarshal error: %s, %s", err, valueJSON)
+	}
+	return schema.Value()
+}
+
 func (r *Repository) ChangedValues(ctx context.Context) ([]Value, error) {
 	query := `SELECT * FROM get_changed_values();`
 	rows, err := r.Query(ctx, query)
