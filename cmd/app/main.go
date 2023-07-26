@@ -6,26 +6,25 @@ import (
 	"os"
 	"time"
 
-	"datatom/grpc"
 	"datatom/internal"
 	"datatom/internal/adapter/pg"
 	"datatom/internal/adapter/rmq"
 	"datatom/internal/api"
+	"datatom/internal/grpc"
 	"datatom/internal/handlers"
 	"datatom/internal/migrations"
+	"datatom/internal/rest"
 	"datatom/internal/routines"
 	pkgpg "datatom/pkg/db/pg"
 	pkglog "datatom/pkg/log"
 	pkgrmq "datatom/pkg/message_broker/rmq"
-	"datatom/rest"
-
 	"github.com/go-co-op/gocron"
 	"golang.org/x/sync/errgroup"
 )
 
 const (
 	versionMajor = 0
-	versionMinor = 1
+	versionMinor = 2
 	versionPatch = 0
 )
 
