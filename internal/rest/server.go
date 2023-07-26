@@ -1,10 +1,10 @@
 package rest
 
 import (
-	"datatom/grpc"
 	"datatom/internal"
 	"datatom/internal/api"
 	"datatom/internal/domain"
+	"datatom/internal/grpc"
 	"datatom/pkg/log"
 	"fmt"
 	"net/http"

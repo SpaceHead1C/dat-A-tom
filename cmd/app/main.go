@@ -6,11 +6,11 @@ import (
 	"os"
 	"time"
 
-	"datatom/grpc"
 	"datatom/internal"
 	"datatom/internal/adapter/pg"
 	"datatom/internal/adapter/rmq"
 	"datatom/internal/api"
+	"datatom/internal/grpc"
 	"datatom/internal/handlers"
 	"datatom/internal/migrations"
 	"datatom/internal/rest"

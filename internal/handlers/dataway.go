@@ -2,9 +2,9 @@ package handlers
 
 import (
 	"context"
-	"datatom/grpc"
 	"datatom/internal/api"
 	"datatom/internal/domain"
+	"datatom/internal/grpc"
 	"datatom/internal/pb"
 	"encoding/json"
 	"errors"
