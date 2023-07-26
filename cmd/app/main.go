@@ -13,12 +13,11 @@ import (
 	"datatom/internal/api"
 	"datatom/internal/handlers"
 	"datatom/internal/migrations"
+	"datatom/internal/rest"
 	"datatom/internal/routines"
 	pkgpg "datatom/pkg/db/pg"
 	pkglog "datatom/pkg/log"
 	pkgrmq "datatom/pkg/message_broker/rmq"
-	"datatom/rest"
-
 	"github.com/go-co-op/gocron"
 	"golang.org/x/sync/errgroup"
 )
