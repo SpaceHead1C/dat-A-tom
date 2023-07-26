@@ -3,7 +3,6 @@ package handlers
 import (
 	"datatom/internal/domain"
 	"fmt"
-
 	"github.com/google/uuid"
 )
 
