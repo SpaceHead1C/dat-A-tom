@@ -2,7 +2,7 @@ package test
 
 import (
 	"context"
-	apg "datatom/internal/adapter/pg"
+	"datatom/internal/adapter/pg"
 	"datatom/internal/api"
 	pkgpg "datatom/pkg/db/pg"
 	"datatom/pkg/log"
@@ -14,7 +14,7 @@ import (
 	"github.com/subosito/gotenv"
 )
 
-func newPgRepo(t *testing.T) *apg.Repository {
+func newPgRepo(t *testing.T) *pg.Repository {
 	if err := gotenv.Load(); err != nil {
 		t.Fatal(err)
 	}
@@ -22,10 +22,11 @@ func newPgRepo(t *testing.T) *apg.Repository {
 	if err != nil {
 		t.Fatal(err)
 	}
-	port, _ := strconv.Atoi(os.Getenv("TEST_POSTGRES_PORT"))
-	ctx, done := context.WithTimeout(context.Background(), time.Second*10)
-	defer done()
-	db, err := pkgpg.NewDB(ctx, pkgpg.Config{
+	port, err := strconv.Atoi(os.Getenv("TEST_POSTGRES_PORT"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	db, err := pkgpg.NewPoolConfig(pkgpg.Config{
 		Address:      os.Getenv("TEST_POSTGRES_HOST"),
 		Port:         uint(port),
 		User:         os.Getenv("TEST_POSTGRES_USER"),
@@ -35,9 +36,13 @@ func newPgRepo(t *testing.T) *apg.Repository {
 	if err != nil {
 		t.Fatal(err)
 	}
-	out, err := apg.NewRepository(db, l)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	out, err := pg.NewRepository(ctx, pg.Config{
+		ConnectConfig: db,
+		Logger:        l,
+	})
+	cancel()
 	if err != nil {
-		_ = db.Close()
 		t.Fatal(err)
 	}
 	return out
@@ -84,6 +89,18 @@ func newTestValueManager(t *testing.T) *api.ValueManager {
 	out, err := api.NewValueManager(api.ValueConfig{
 		Repository: repo,
 		Timeout:    time.Second,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return out
+}
+
+func newTestChangedDataManager(t *testing.T) *api.ChangedDataManager {
+	repo := newPgRepo(t)
+	out, err := api.NewChangedDataManager(api.ChangedDataConfig{
+		Repository: repo,
+		Timeout:    time.Second * 5,
 	})
 	if err != nil {
 		t.Fatal(err)

@@ -32,3 +32,25 @@ func TestSetValue(t *testing.T) {
 	t.Log("hash sum:", o.Sum)
 	t.Log("change at:", o.ChangeAt)
 }
+
+func TestChangedValues(t *testing.T) {
+	mngr := newTestValueManager(t)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+	vs, err := mngr.ChangedValues(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, v := range vs {
+		t.Logf(`=== Value ===
+record ID: %s
+property ID: %s
+type: %s
+reference type ID: %s
+value: %v
+hash sum: %s
+change at: %s`,
+			v.RecordID.String(), v.PropertyID.String(), v.Type.String(), v.RefTypeID.String(), v.Value, v.Sum, v.ChangeAt,
+		)
+	}
+}

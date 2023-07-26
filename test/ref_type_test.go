@@ -52,4 +52,6 @@ func TestGetRefType(t *testing.T) {
 	t.Log("ID:", rt.ID.String())
 	t.Log("name:", rt.Name)
 	t.Log("description:", rt.Description)
+	t.Log("sum:", rt.Sum)
+	t.Log("change at:", rt.ChangeAt)
 }

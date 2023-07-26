@@ -54,7 +54,7 @@ func (s StoredConfigUUID) ScanStoredConfigValue(dest any) error {
 		*d = s.Value
 		dest = d
 	} else {
-		err = fmt.Errorf("unexpected type %T", dest)
+		err = fmt.Errorf("%w %T", ErrUnexpectedType, dest)
 	}
 	return err
 }

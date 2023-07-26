@@ -34,3 +34,59 @@ func (r *Repository) SetValue(ctx context.Context, req SetValueRequest) (*Value,
 	}
 	return schema.Value()
 }
+
+func (r *Repository) GetValue(ctx context.Context, req GetValueRequest) (*Value, error) {
+	var valueJSON []byte
+	args := []any{
+		req.RecordID,
+		req.PropertyID,
+	}
+	query := `SELECT get_value($1, $2);`
+	if err := r.QueryRow(ctx, query, args...).Scan(&valueJSON); err != nil {
+		if pg.IsNoRowsError(err) {
+			return nil, ErrValueNotFound
+		}
+		return nil, fmt.Errorf("database error: %w, %s", err, query)
+	}
+	var schema ValueSchema
+	if err := json.Unmarshal(valueJSON, &schema); err != nil {
+		return nil, fmt.Errorf("db result unmarshal error: %s, %s", err, valueJSON)
+	}
+	return schema.Value()
+}
+
+func (r *Repository) GetValueByKey(ctx context.Context, key []byte) (*Value, error) {
+	req, err := getValueRequestByKey(key)
+	if err != nil {
+		return nil, fmt.Errorf("value key unmarshal error: %w, %s", err, key)
+	}
+	return r.GetValue(ctx, *req)
+}
+
+func (r *Repository) ChangedValues(ctx context.Context) ([]Value, error) {
+	query := `SELECT * FROM get_changed_values();`
+	rows, err := r.Query(ctx, query)
+	if err != nil {
+		if pg.IsNoRowsError(err) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("database error: %w, %s", err, query)
+	}
+	var out []Value
+	for rows.Next() {
+		var valueJSON []byte
+		if err := rows.Scan(&valueJSON); err != nil {
+			return nil, fmt.Errorf("database scan error: %w, %s", err, query)
+		}
+		var schema ValueSchema
+		if err := json.Unmarshal(valueJSON, &schema); err != nil {
+			return nil, fmt.Errorf("db result unmarshal error: %s, %s", err, valueJSON)
+		}
+		value, err := schema.Value()
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, *value)
+	}
+	return out, nil
+}
