@@ -2,6 +2,10 @@ package main
 
 import (
 	"context"
+	"log"
+	"os"
+	"time"
+
 	"datatom/grpc"
 	"datatom/internal"
 	"datatom/internal/adapter/pg"
@@ -9,17 +13,13 @@ import (
 	"datatom/internal/api"
 	"datatom/internal/handlers"
 	"datatom/internal/migrations"
-
+	"datatom/internal/routines"
 	pkgpg "datatom/pkg/db/pg"
 	pkglog "datatom/pkg/log"
 	pkgrmq "datatom/pkg/message_broker/rmq"
 	"datatom/rest"
+
 	"github.com/go-co-op/gocron"
-
-	"log"
-	"os"
-	"time"
-
 	"golang.org/x/sync/errgroup"
 )
 
@@ -120,6 +120,12 @@ func main() {
 	}
 	l.Info("reference types manager configured")
 
+	dbManager, err := api.NewDBManager(api.DBConfig{Repository: repo})
+	if err != nil {
+		l.Fatal(err.Error())
+	}
+	l.Info("database manager configured")
+
 	recordManager, err := api.NewRecordManager(api.RecordConfig{
 		Repository: repo,
 		Broker:     broker,
@@ -149,6 +155,15 @@ func main() {
 		l.Fatal(err.Error())
 	}
 	l.Info("values manager configured")
+
+	changedDataManager, err := api.NewChangedDataManager(api.ChangedDataConfig{
+		Repository: repo,
+		Timeout:    time.Second * 5,
+	})
+	if err != nil {
+		l.Fatal(err.Error())
+	}
+	l.Info("change data manager configured")
 
 	storedConfigsManager, err := api.NewStoredConfigManager(api.StoredConfigsConfig{
 		Repository: repo,
@@ -220,10 +235,18 @@ func main() {
 	s := gocron.NewScheduler(time.UTC)
 
 	if amqConn != nil && c.DWExchange != "" {
-		if _, err := s.Every(10).Second().SingletonMode().Do(func() error {
-			l.Infof("routine started at %s", time.Now())
-			return nil
-		}); err != nil {
+		if _, err := s.Every(10).Second().SingletonMode().Do(routines.NewSendChangedDataRoutine(routines.SendChangedDataConfig{
+			Logger:               l,
+			ReferenceTypeManager: refTypeManager,
+			RecordManager:        recordManager,
+			PropertyManager:      propertyManager,
+			ValueManager:         valueManager,
+			ChangedDataManager:   changedDataManager,
+			StoredConfigsManager: storedConfigsManager,
+			DBManager:            dbManager,
+			Exchange:             c.DWExchange,
+			RoutingKeys:          []string{c.DWRoutingKey},
+		})); err != nil {
 			l.Fatalf("add routine job error: %s", err)
 		}
 	}
