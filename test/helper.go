@@ -96,11 +96,11 @@ func newTestValueManager(t *testing.T) *api.ValueManager {
 	return out
 }
 
-func newTestSentDataManager(t *testing.T) *api.SentDataManager {
+func newTestChangedDataManager(t *testing.T) *api.ChangedDataManager {
 	repo := newPgRepo(t)
-	out, err := api.NewSentDataManager(api.SentDataConfig{
+	out, err := api.NewChangedDataManager(api.ChangedDataConfig{
 		Repository: repo,
-		Timeout:    time.Second,
+		Timeout:    time.Second * 5,
 	})
 	if err != nil {
 		t.Fatal(err)
