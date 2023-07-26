@@ -141,6 +141,7 @@ func main() {
 
 	valueManager, err := api.NewValueManager(api.ValueConfig{
 		Repository: repo,
+		Broker:     broker,
 		Timeout:    time.Second,
 	})
 	if err != nil {

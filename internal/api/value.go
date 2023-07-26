@@ -16,12 +16,16 @@ type ValueManager struct {
 
 type ValueConfig struct {
 	Repository ValueRepository
+	Broker     ValueBroker
 	Timeout    time.Duration
 }
 
 func NewValueManager(c ValueConfig) (*ValueManager, error) {
 	if c.Repository == nil {
-		return nil, fmt.Errorf("value repository can't be nil")
+		return nil, fmt.Errorf("value repository can not be nil")
+	}
+	if c.Broker == nil {
+		return nil, fmt.Errorf("value broker can not be nil")
 	}
 	if c.Timeout == 0 {
 		c.Timeout = defaultValueManagerTimeout
@@ -57,4 +61,17 @@ func (vm *ValueManager) ChangedValues(ctx context.Context) ([]Value, error) {
 	ctx, cancel := context.WithTimeout(ctx, vm.Timeout)
 	defer cancel()
 	return vm.Repository.ChangedValues(ctx)
+}
+
+func (vm *ValueManager) Send(ctx context.Context, req SendValueRequest) error {
+	ctx, cancel := context.WithTimeout(ctx, vm.Timeout)
+	defer cancel()
+	return vm.Broker.SendValue(ctx, req)
+}
+
+func (vm *ValueManager) GetSender(req SendValueRequest) *ValueSender {
+	return &ValueSender{
+		man: vm,
+		req: req,
+	}
 }
