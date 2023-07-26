@@ -14,6 +14,7 @@ type RefTypeRepository interface {
 	AddRefType(context.Context, AddRefTypeRequest) (uuid.UUID, error)
 	UpdateRefType(context.Context, UpdRefTypeRequest) (*RefType, error)
 	GetRefType(context.Context, uuid.UUID) (*RefType, error)
+	GetRefTypeByKey(context.Context, []byte) (*RefType, error)
 	GetRefTypeSentStateForUpdate(context.Context, uuid.UUID, db.Transaction) (*RefTypeSentState, error)
 	SetSentRefType(context.Context, RefTypeSentState, db.Transaction) (*RefTypeSentState, error)
 }

@@ -70,3 +70,11 @@ func (r *Repository) GetRefType(ctx context.Context, id uuid.UUID) (*RefType, er
 	}
 	return schema.RefType(), nil
 }
+
+func (r *Repository) GetRefTypeByKey(ctx context.Context, key []byte) (*RefType, error) {
+	req, err := getDataRequestByKey(key)
+	if err != nil {
+		return nil, fmt.Errorf("reference type key unmarshal error: %w, %s", err, key)
+	}
+	return r.GetRefType(ctx, req)
+}

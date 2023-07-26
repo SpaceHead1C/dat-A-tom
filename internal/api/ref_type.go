@@ -53,6 +53,12 @@ func (rtm *RefTypeManager) Get(ctx context.Context, id uuid.UUID) (*RefType, err
 	return rtm.Repository.GetRefType(ctx, id)
 }
 
+func (rtm *RefTypeManager) GetByKey(ctx context.Context, key []byte) (*RefType, error) {
+	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
+	defer cancel()
+	return rtm.Repository.GetRefTypeByKey(ctx, key)
+}
+
 func (rtm *RefTypeManager) GetSentState(ctx context.Context, id uuid.UUID, transaction db.Transaction) (*RefTypeSentState, error) {
 	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
 	defer cancel()
