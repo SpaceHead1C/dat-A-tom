@@ -53,6 +53,12 @@ func (pm *PropertyManager) Get(ctx context.Context, id uuid.UUID) (*Property, er
 	return pm.Repository.GetProperty(ctx, id)
 }
 
+func (pm *PropertyManager) GetByKey(ctx context.Context, key []byte) (*Property, error) {
+	ctx, cancel := context.WithTimeout(ctx, pm.Timeout)
+	defer cancel()
+	return pm.Repository.GetPropertyByKey(ctx, key)
+}
+
 func (pm *PropertyManager) GetSentState(ctx context.Context, id uuid.UUID, transaction db.Transaction) (*PropertySentState, error) {
 	ctx, cancel := context.WithTimeout(ctx, pm.Timeout)
 	defer cancel()
