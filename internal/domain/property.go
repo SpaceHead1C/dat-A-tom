@@ -18,6 +18,10 @@ type PropertyRepository interface {
 	SetSentProperty(context.Context, PropertySentState, db.Transaction) (*PropertySentState, error)
 }
 
+type PropertyBroker interface {
+	SendProperty(context.Context, SendPropertyRequest) error
+}
+
 type Property struct {
 	ID             uuid.UUID
 	Types          []Type
@@ -47,4 +51,11 @@ type UpdPropertyRequest struct {
 	ID          uuid.UUID
 	Name        *string
 	Description *string
+}
+
+type SendPropertyRequest struct {
+	Property
+	TomID       uuid.UUID
+	Exchange    string
+	RoutingKeys []string
 }
