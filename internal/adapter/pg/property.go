@@ -80,3 +80,11 @@ func (r *Repository) GetProperty(ctx context.Context, id uuid.UUID) (*Property, 
 	}
 	return schema.Property(), nil
 }
+
+func (r *Repository) GetPropertyByKey(ctx context.Context, key []byte) (*Property, error) {
+	req, err := getDataRequestByKey(key)
+	if err != nil {
+		return nil, fmt.Errorf("property key unmarshal error: %w, %s", err, key)
+	}
+	return r.GetProperty(ctx, req)
+}

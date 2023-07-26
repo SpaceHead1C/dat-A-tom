@@ -2,15 +2,25 @@ package domain
 
 import (
 	"context"
+	"datatom/pkg/db"
 	"time"
 
 	"github.com/google/uuid"
 )
 
+const DeliveryTypeProperty = "property"
+
 type PropertyRepository interface {
 	AddProperty(context.Context, AddPropertyRequest) (uuid.UUID, error)
 	UpdateProperty(context.Context, UpdPropertyRequest) (*Property, error)
 	GetProperty(context.Context, uuid.UUID) (*Property, error)
+	GetPropertyByKey(context.Context, []byte) (*Property, error)
+	GetPropertySentStateForUpdate(context.Context, uuid.UUID, db.Transaction) (*PropertySentState, error)
+	SetSentProperty(context.Context, PropertySentState, db.Transaction) (*PropertySentState, error)
+}
+
+type PropertyBroker interface {
+	SendProperty(context.Context, SendPropertyRequest) error
 }
 
 type Property struct {
@@ -22,6 +32,12 @@ type Property struct {
 	OwnerRefTypeID uuid.UUID
 	Sum            string
 	ChangeAt       time.Time
+}
+
+type PropertySentState struct {
+	ID     uuid.UUID
+	Sum    string
+	SentAt time.Time
 }
 
 type AddPropertyRequest struct {
@@ -36,4 +52,11 @@ type UpdPropertyRequest struct {
 	ID          uuid.UUID
 	Name        *string
 	Description *string
+}
+
+type SendPropertyRequest struct {
+	Property
+	TomID       uuid.UUID
+	Exchange    string
+	RoutingKeys []string
 }
