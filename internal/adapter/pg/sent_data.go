@@ -33,7 +33,27 @@ func (r *Repository) SetSentData(ctx context.Context, req SetSentDataRequest) (*
 	return schema.SentData(), nil
 }
 
-func (r *Repository) GetSentData(ctx context.Context, req GetSentDataRequest) (*SentData, error) {
+func (r *Repository) GetRecordSentStateForUpdate(ctx context.Context, id uuid.UUID, tx db.Transaction) (*RecordSentState, error) {
+	var sentStateJSON []byte
+	query := `SELECT get_sent_record_for_update($1);`
+	queryRow, err := funcQueryRow(r, tx)
+	if err != nil {
+		return nil, fmt.Errorf("transaction error: %w", err)
+	}
+	if err := queryRow(ctx, query, id).Scan(&sentStateJSON); err != nil {
+		if pg.IsNoRowsError(err) {
+			return nil, ErrSentDataNotFound
+		}
+		return nil, fmt.Errorf("database error: %w, %s", err, query)
+	}
+	var schema RecordSentStateSchema
+	if err := json.Unmarshal(sentStateJSON, &schema); err != nil {
+		return nil, fmt.Errorf("db result unmarshal error: %s, %s", err, sentStateJSON)
+	}
+	return schema.SentData(), nil
+}
+
+func (r *Repository) SetSentProperty(ctx context.Context, state PropertySentState, tx db.Transaction) (*PropertySentState, error) {
 	var sentDataJSON []byte
 	args := []any{
 		req.RecordID,
