@@ -15,6 +15,7 @@ const DeliveryTypeValue = "value"
 type ValueRepository interface {
 	SetValue(context.Context, SetValueRequest) (*Value, error)
 	GetValue(context.Context, GetValueRequest) (*Value, error)
+	GetValueByKey(context.Context, []byte) (*Value, error)
 	ChangedValues(context.Context) ([]Value, error)
 	GetValueSentStateForUpdate(context.Context, GetValueRequest, db.Transaction) (*ValueSentState, error)
 	SetSentValue(context.Context, ValueSentState, db.Transaction) (*ValueSentState, error)

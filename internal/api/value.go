@@ -45,6 +45,12 @@ func (vm *ValueManager) Get(ctx context.Context, req GetValueRequest) (*Value, e
 	return vm.Repository.GetValue(ctx, req)
 }
 
+func (vm *ValueManager) GetByKey(ctx context.Context, key []byte) (*Value, error) {
+	ctx, cancel := context.WithTimeout(ctx, vm.Timeout)
+	defer cancel()
+	return vm.Repository.GetValueByKey(ctx, key)
+}
+
 func (vm *ValueManager) GetSentState(ctx context.Context, req GetValueRequest, transaction db.Transaction) (*ValueSentState, error) {
 	ctx, cancel := context.WithTimeout(ctx, vm.Timeout)
 	defer cancel()
