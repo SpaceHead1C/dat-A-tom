@@ -46,3 +46,36 @@ func (rts *RefTypeSender) SetSentState(ctx context.Context, transaction db.Trans
 	)
 	return err
 }
+
+type PropertySender struct {
+	man *PropertyManager
+	req domain.SendPropertyRequest
+}
+
+func (ps *PropertySender) Send(ctx context.Context) error {
+	return ps.man.Send(ctx, ps.req)
+}
+
+func (ps *PropertySender) SumEqualsSent(ctx context.Context, transaction db.Transaction) (bool, error) {
+	state, err := ps.man.GetSentState(ctx, ps.req.ID, transaction)
+	if err != nil {
+		if errors.Is(err, domain.ErrSentDataNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return state.Sum == ps.req.Sum, nil
+}
+
+func (ps *PropertySender) SetSentState(ctx context.Context, transaction db.Transaction) error {
+	_, err := ps.man.SetSentState(
+		ctx,
+		domain.PropertySentState{
+			ID:     ps.req.ID,
+			Sum:    ps.req.Sum,
+			SentAt: time.Now().UTC(),
+		},
+		transaction,
+	)
+	return err
+}

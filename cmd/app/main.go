@@ -5,6 +5,7 @@ import (
 	"datatom/grpc"
 	"datatom/internal"
 	"datatom/internal/adapter/pg"
+	"datatom/internal/adapter/rmq"
 	"datatom/internal/api"
 	"datatom/internal/handlers"
 	"datatom/internal/migrations"
@@ -129,6 +130,7 @@ func main() {
 
 	propertyManager, err := api.NewPropertyManager(api.PropertyConfig{
 		Repository: repo,
+		Broker:     broker,
 		Timeout:    time.Second,
 	})
 	if err != nil {

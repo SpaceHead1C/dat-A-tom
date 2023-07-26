@@ -18,12 +18,16 @@ type PropertyManager struct {
 
 type PropertyConfig struct {
 	Repository PropertyRepository
+	Broker     PropertyBroker
 	Timeout    time.Duration
 }
 
 func NewPropertyManager(c PropertyConfig) (*PropertyManager, error) {
 	if c.Repository == nil {
-		return nil, fmt.Errorf("property repository can't be nil")
+		return nil, fmt.Errorf("property repository can not be nil")
+	}
+	if c.Broker == nil {
+		return nil, fmt.Errorf("property broker can not be nil")
 	}
 	if c.Timeout == 0 {
 		c.Timeout = defaultPropertyManagerTimeout
@@ -59,4 +63,17 @@ func (pm *PropertyManager) SetSentState(ctx context.Context, state PropertySentS
 	ctx, cancel := context.WithTimeout(ctx, pm.Timeout)
 	defer cancel()
 	return pm.Repository.SetSentProperty(ctx, state, transaction)
+}
+
+func (pm *PropertyManager) Send(ctx context.Context, req SendPropertyRequest) error {
+	ctx, cancel := context.WithTimeout(ctx, pm.Timeout)
+	defer cancel()
+	return pm.Broker.SendProperty(ctx, req)
+}
+
+func (pm *PropertyManager) GetSender(req SendPropertyRequest) *PropertySender {
+	return &PropertySender{
+		man: pm,
+		req: req,
+	}
 }
