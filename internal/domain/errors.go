@@ -12,11 +12,12 @@ var (
 	ErrPropertyNotFound = fmt.Errorf("property %w", ErrNotFound)
 	ErrSentDataNotFound = fmt.Errorf("sent data %w", ErrNotFound)
 
+	ErrUnexpectedType          = errors.New("unexpected type")
 	ErrStoredConfigTomIDNotSet = errors.New("tom ID not set")
 
-	ErrExpected = fmt.Errorf("expected")
-
-	ErrParseError = fmt.Errorf("parse")
+	ErrExpected    = errors.New("expected")
+	ErrUnknownType = errors.New("unknown type")
+	ErrParseError  = errors.New("parse")
 
 	// PostgreSQL exceptions
 	ErrTypesExpectedPG            = fmt.Errorf("types expected")

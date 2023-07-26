@@ -21,7 +21,7 @@ func (r *Repository) GetStoredConfigDatawayTomID(ctx context.Context) (StoredCon
 	out := StoredConfigUUID{Value: uuid.Nil}
 	query := `SELECT get_config_dataway_tom_id();`
 	if err := r.QueryRow(ctx, query).Scan(&id); err != nil {
-		return out, fmt.Errorf("database error: %w, %s\"", err, query)
+		return out, fmt.Errorf("database error: %w, %s", err, query)
 	}
 	if !id.Valid {
 		return out, ErrStoredConfigTomIDNotSet
