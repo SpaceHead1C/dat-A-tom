@@ -1,10 +1,11 @@
 package routines
 
-import "time"
-
 func NewSendChangedDataRoutine(c SendChangedDataConfig) func() error {
 	return func() error {
-		c.Logger.Infof("routine started at %s", time.Now())
-		return nil
+		err := sendChangedData(c)
+		if err != nil {
+			c.Logger.Errorln(err.Error())
+		}
+		return err
 	}
 }
