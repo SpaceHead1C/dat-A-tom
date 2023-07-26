@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"datatom/pkg/db"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,6 +14,8 @@ type RecordRepository interface {
 	AddRecord(context.Context, AddRecordRequest) (uuid.UUID, error)
 	UpdateRecord(context.Context, UpdRecordRequest) (*Record, error)
 	GetRecord(context.Context, uuid.UUID) (*Record, error)
+	GetRecordSentStateForUpdate(context.Context, uuid.UUID, db.Transaction) (*RecordSentState, error)
+	SetSentRecord(context.Context, RecordSentState, db.Transaction) (*RecordSentState, error)
 }
 
 type Record struct {
@@ -23,6 +26,12 @@ type Record struct {
 	DeletionMark    bool
 	Sum             string
 	ChangeAt        time.Time
+}
+
+type RecordSentState struct {
+	ID     uuid.UUID
+	Sum    string
+	SentAt time.Time
 }
 
 type AddRecordRequest struct {

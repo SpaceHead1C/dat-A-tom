@@ -15,6 +15,15 @@ type ValueRepository interface {
 	SetValue(context.Context, SetValueRequest) (*Value, error)
 	GetValue(context.Context, GetValueRequest) (*Value, error)
 	ChangedValues(context.Context) ([]Value, error)
+	GetValueSentStateForUpdate(context.Context, GetValueRequest, db.Transaction) (*ValueSentState, error)
+	SetSentValue(context.Context, ValueSentState, db.Transaction) (*ValueSentState, error)
+}
+
+type ValueSentState struct {
+	RecordID   uuid.UUID
+	PropertyID uuid.UUID
+	Sum        string
+	SentAt     time.Time
 }
 
 type Value struct {

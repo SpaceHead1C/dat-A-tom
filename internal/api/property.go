@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	. "datatom/internal/domain"
+	"datatom/pkg/db"
 	"fmt"
 	"time"
 
@@ -46,4 +47,16 @@ func (pm *PropertyManager) Get(ctx context.Context, id uuid.UUID) (*Property, er
 	ctx, cancel := context.WithTimeout(ctx, pm.Timeout)
 	defer cancel()
 	return pm.Repository.GetProperty(ctx, id)
+}
+
+func (pm *PropertyManager) GetSentState(ctx context.Context, id uuid.UUID, transaction db.Transaction) (*PropertySentState, error) {
+	ctx, cancel := context.WithTimeout(ctx, pm.Timeout)
+	defer cancel()
+	return pm.Repository.GetPropertySentStateForUpdate(ctx, id, transaction)
+}
+
+func (pm *PropertyManager) SetSentState(ctx context.Context, state PropertySentState, transaction db.Transaction) (*PropertySentState, error) {
+	ctx, cancel := context.WithTimeout(ctx, pm.Timeout)
+	defer cancel()
+	return pm.Repository.SetSentProperty(ctx, state, transaction)
 }

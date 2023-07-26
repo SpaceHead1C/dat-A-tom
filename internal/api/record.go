@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	. "datatom/internal/domain"
+	"datatom/pkg/db"
 	"fmt"
 	"time"
 
@@ -46,4 +47,16 @@ func (rm *RecordManager) Get(ctx context.Context, id uuid.UUID) (*Record, error)
 	ctx, cancel := context.WithTimeout(ctx, rm.Timeout)
 	defer cancel()
 	return rm.Repository.GetRecord(ctx, id)
+}
+
+func (rm *RecordManager) GetSentState(ctx context.Context, id uuid.UUID, transaction db.Transaction) (*RecordSentState, error) {
+	ctx, cancel := context.WithTimeout(ctx, rm.Timeout)
+	defer cancel()
+	return rm.Repository.GetRecordSentStateForUpdate(ctx, id, transaction)
+}
+
+func (rm *RecordManager) SetSentState(ctx context.Context, state RecordSentState, transaction db.Transaction) (*RecordSentState, error) {
+	ctx, cancel := context.WithTimeout(ctx, rm.Timeout)
+	defer cancel()
+	return rm.Repository.SetSentRecord(ctx, state, transaction)
 }

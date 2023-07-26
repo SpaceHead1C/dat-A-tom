@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	. "datatom/internal/domain"
+	"datatom/pkg/db"
 	"fmt"
 	"time"
 
@@ -46,4 +47,16 @@ func (rtm *RefTypeManager) Get(ctx context.Context, id uuid.UUID) (*RefType, err
 	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
 	defer cancel()
 	return rtm.Repository.GetRefType(ctx, id)
+}
+
+func (rtm *RefTypeManager) GetSentState(ctx context.Context, id uuid.UUID, transaction db.Transaction) (*RefTypeSentState, error) {
+	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
+	defer cancel()
+	return rtm.Repository.GetRefTypeSentStateForUpdate(ctx, id, transaction)
+}
+
+func (rtm *RefTypeManager) SetSentState(ctx context.Context, state RefTypeSentState, transaction db.Transaction) (*RefTypeSentState, error) {
+	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
+	defer cancel()
+	return rtm.Repository.SetSentRefType(ctx, state, transaction)
 }

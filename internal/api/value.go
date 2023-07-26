@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	. "datatom/internal/domain"
+	"datatom/pkg/db"
 	"fmt"
 	"time"
 )
@@ -38,6 +39,18 @@ func (vm *ValueManager) Get(ctx context.Context, req GetValueRequest) (*Value, e
 	ctx, cancel := context.WithTimeout(ctx, vm.Timeout)
 	defer cancel()
 	return vm.Repository.GetValue(ctx, req)
+}
+
+func (vm *ValueManager) GetSentState(ctx context.Context, req GetValueRequest, transaction db.Transaction) (*ValueSentState, error) {
+	ctx, cancel := context.WithTimeout(ctx, vm.Timeout)
+	defer cancel()
+	return vm.Repository.GetValueSentStateForUpdate(ctx, req, transaction)
+}
+
+func (vm *ValueManager) SetSentState(ctx context.Context, state ValueSentState, transaction db.Transaction) (*ValueSentState, error) {
+	ctx, cancel := context.WithTimeout(ctx, vm.Timeout)
+	defer cancel()
+	return vm.Repository.SetSentValue(ctx, state, transaction)
 }
 
 func (vm *ValueManager) ChangedValues(ctx context.Context) ([]Value, error) {

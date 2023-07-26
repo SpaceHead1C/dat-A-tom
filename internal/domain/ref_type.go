@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"datatom/pkg/db"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,6 +14,8 @@ type RefTypeRepository interface {
 	AddRefType(context.Context, AddRefTypeRequest) (uuid.UUID, error)
 	UpdateRefType(context.Context, UpdRefTypeRequest) (*RefType, error)
 	GetRefType(context.Context, uuid.UUID) (*RefType, error)
+	GetRefTypeSentStateForUpdate(context.Context, uuid.UUID, db.Transaction) (*RefTypeSentState, error)
+	SetSentRefType(context.Context, RefTypeSentState, db.Transaction) (*RefTypeSentState, error)
 }
 
 type RefType struct {
@@ -21,6 +24,12 @@ type RefType struct {
 	Description string
 	Sum         string
 	ChangeAt    time.Time
+}
+
+type RefTypeSentState struct {
+	ID     uuid.UUID
+	Sum    string
+	SentAt time.Time
 }
 
 type AddRefTypeRequest struct {
