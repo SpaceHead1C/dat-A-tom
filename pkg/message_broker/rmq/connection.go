@@ -1,7 +1,8 @@
-package amq
+package rmq
 
 import (
 	"datatom/pkg/log"
+	"errors"
 	"fmt"
 	rmq "github.com/wagslane/go-rabbitmq"
 	"go.uber.org/zap"
@@ -22,9 +23,14 @@ type ConnectionConfig struct {
 	VHost    string
 }
 
-func NewConnection(c ConnectionConfig) (*rmq.Conn, error) {
+type Connection struct {
+	conn *rmq.Conn
+	l    *zap.SugaredLogger
+}
+
+func NewConnection(c ConnectionConfig) (*Connection, error) {
 	if strings.TrimSpace(c.Address) == "" {
-		return nil, nil
+		return nil, errors.New("RMQ address can not be empty")
 	}
 	if c.Port == 0 {
 		c.Port = 5672
@@ -38,10 +44,23 @@ func NewConnection(c ConnectionConfig) (*rmq.Conn, error) {
 	if strings.TrimSpace(c.Password) == "" {
 		c.Password = defaultPasswordRMQ
 	}
-	return rmq.NewConn(
+	conn, err := rmq.NewConn(
 		connectionString(c),
 		rmq.WithConnectionOptionsLogger(logger{c.Logger}),
 	)
+	if err != nil {
+		return nil, err
+	}
+	return &Connection{
+		conn: conn,
+		l:    c.Logger,
+	}, nil
+}
+
+func (conn *Connection) Close() {
+	if err := conn.conn.Close(); err != nil {
+		conn.l.Errorf("rmq connection close error: %s", err)
+	}
 }
 
 func connectionString(c ConnectionConfig) string {

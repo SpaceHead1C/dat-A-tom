@@ -11,6 +11,7 @@ import (
 	"datatom/pkg/amq"
 	pkgpg "datatom/pkg/db/pg"
 	pkglog "datatom/pkg/log"
+	pkgrmq "datatom/pkg/message_broker/rmq"
 	"datatom/rest"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
@@ -76,6 +77,20 @@ func main() {
 	}
 	defer repo.Close()
 	l.Info("repository configured")
+
+	amqConn, err := pkgrmq.NewConnection(pkgrmq.ConnectionConfig{
+		Logger:   l,
+		Address:  c.RMQAddress,
+		Port:     c.RMQPort,
+		User:     c.RMQUser,
+		Password: c.RMQPassword,
+		VHost:    c.RMQVHost,
+	})
+	if err != nil {
+		l.Fatalf("rmq dial error: %s", err)
+	}
+	defer amqConn.Close()
+	l.Infoln("RMQ connection established")
 
 	refTypeManager, err := api.NewRefTypeManager(api.RefTypeConfig{
 		Repository: repo,
@@ -143,22 +158,6 @@ func main() {
 		l.Fatal(err.Error())
 	}
 
-	amqConn, err := amq.NewConnection(amq.ConnectionConfig{
-		Logger:   l,
-		Address:  c.RMQAddress,
-		Port:     c.RMQPort,
-		User:     c.RMQUser,
-		Password: c.RMQPassword,
-		VHost:    c.RMQVHost,
-	})
-	if err != nil {
-		l.Fatalf("rmq dial error: %s", err)
-	}
-	if amqConn != nil {
-		defer amqConn.Close()
-		l.Infoln("RMQ connection established")
-	}
-
 	g, _ := errgroup.WithContext(context.Background())
 
 	g.Go(func() error {
@@ -172,10 +171,11 @@ func main() {
 		if amqConn == nil {
 			return nil
 		}
-		if err := amq.RunNewConsumer(amq.ConsumerConfig{
-			Logger: l,
-			Conn:   amqConn,
-			Queue:  c.RMQConsumeQueue,
+		consumer := pkgrmq.NewConsumer(pkgrmq.ConsumerConfig{
+			Logger:    l,
+			Conn:      amqConn,
+			Queue:     c.RMQConsumeQueue,
+			QueueArgs: pkgrmq.NewQueueArgs().AsClassic().AddDLEArg(c.RMQDLE),
 			Handler: handlers.NewConsumeHandler(handlers.ConsumeHandlerConfig{
 				Logger:          l,
 				Timeout:         time.Second * 2,
@@ -183,9 +183,9 @@ func main() {
 				PropertyManager: propertyManager,
 				RecordManager:   recordManager,
 			}),
-			QueueArgs: amq.NewQueueArgs().AddTypeArg(amqp.QueueTypeClassic).AddDLEArg(c.RMQDLE),
-		}); err != nil {
-			l.Errorf("rmq run consuming error: %s", err)
+		})
+		if err := consumer.Consume(); err != nil {
+			l.Errorf("messages consuming error: %s", err)
 			return err
 		}
 		return nil

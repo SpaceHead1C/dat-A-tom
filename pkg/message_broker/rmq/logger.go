@@ -1,4 +1,4 @@
-package amq
+package rmq
 
 import "go.uber.org/zap"
 
