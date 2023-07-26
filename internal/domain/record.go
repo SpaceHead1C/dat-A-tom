@@ -18,6 +18,10 @@ type RecordRepository interface {
 	SetSentRecord(context.Context, RecordSentState, db.Transaction) (*RecordSentState, error)
 }
 
+type RecordBroker interface {
+	SendRecord(context.Context, SendRecordRequest) error
+}
+
 type Record struct {
 	ID              uuid.UUID
 	ReferenceTypeID uuid.UUID
@@ -46,4 +50,11 @@ type UpdRecordRequest struct {
 	Name         *string
 	Description  *string
 	DeletionMark *bool
+}
+
+type SendRecordRequest struct {
+	Record
+	TomID       uuid.UUID
+	Exchange    string
+	RoutingKeys []string
 }
