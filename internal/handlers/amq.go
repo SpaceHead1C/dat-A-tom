@@ -13,12 +13,6 @@ import (
 	"time"
 )
 
-const (
-	deliveryTypeValue    = "value"
-	deliveryTypeProperty = "property"
-	deliveryTypeRecord   = "record"
-)
-
 type ConsumeHandlerConfig struct {
 	Logger          *zap.SugaredLogger
 	Timeout         time.Duration
@@ -40,11 +34,11 @@ func NewConsumeHandler(c ConsumeHandlerConfig) rmq.Handler {
 		var err error
 		var isInnerError bool
 		switch d.Type {
-		case deliveryTypeValue:
+		case domain.DeliveryTypeValue:
 			isInnerError, err = processMessageWithValue(ctx, c.ValueManager, d.Body)
-		case deliveryTypeProperty:
+		case domain.DeliveryTypeProperty:
 			isInnerError, err = processMessageWithProperty(ctx, c.PropertyManager, d.Body)
-		case deliveryTypeRecord:
+		case domain.DeliveryTypeRecord:
 			isInnerError, err = processMessageWithRecord(ctx, c.RecordManager, d.Body)
 		default:
 			err = fmt.Errorf("unexpected delivery type %s", d.Type)

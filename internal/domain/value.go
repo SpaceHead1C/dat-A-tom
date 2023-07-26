@@ -9,6 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const DeliveryTypeValue = "value"
+
 type ValueRepository interface {
 	SetValue(context.Context, SetValueRequest) (*Value, error)
 	ChangedValues(context.Context) ([]Value, error)

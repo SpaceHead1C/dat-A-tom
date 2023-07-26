@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const DeliveryTypeProperty = "property"
+
 type PropertyRepository interface {
 	AddProperty(context.Context, AddPropertyRequest) (uuid.UUID, error)
 	UpdateProperty(context.Context, UpdPropertyRequest) (*Property, error)

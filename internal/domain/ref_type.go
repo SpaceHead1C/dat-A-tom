@@ -6,6 +6,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const DeliveryTypeRefType = "reference_type"
+
 type RefTypeRepository interface {
 	AddRefType(context.Context, AddRefTypeRequest) (uuid.UUID, error)
 	UpdateRefType(context.Context, UpdRefTypeRequest) (*RefType, error)

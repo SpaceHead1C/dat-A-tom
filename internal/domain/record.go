@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const DeliveryTypeRecord = "record"
+
 type RecordRepository interface {
 	AddRecord(context.Context, AddRecordRequest) (uuid.UUID, error)
 	UpdateRecord(context.Context, UpdRecordRequest) (*Record, error)
