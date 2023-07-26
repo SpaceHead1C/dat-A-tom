@@ -47,19 +47,6 @@ func (rtm *RefTypeManager) Update(ctx context.Context, req UpdRefTypeRequest) (*
 	return rtm.Repository.UpdateRefType(ctx, req)
 }
 
-func (rtm *RefTypeManager) Send(ctx context.Context, req SendRefTypeRequest) error {
-	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
-	defer cancel()
-	return rtm.Broker.SendRefType(ctx, req)
-}
-
-func (rtm *RefTypeManager) GetSender(req SendRefTypeRequest) *RefTypeSender {
-	return &RefTypeSender{
-		man: rtm,
-		req: req,
-	}
-}
-
 func (rtm *RefTypeManager) Get(ctx context.Context, id uuid.UUID) (*RefType, error) {
 	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
 	defer cancel()
@@ -76,4 +63,17 @@ func (rtm *RefTypeManager) SetSentState(ctx context.Context, state RefTypeSentSt
 	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
 	defer cancel()
 	return rtm.Repository.SetSentRefType(ctx, state, transaction)
+}
+
+func (rtm *RefTypeManager) Send(ctx context.Context, req SendRefTypeRequest) error {
+	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
+	defer cancel()
+	return rtm.Broker.SendRefType(ctx, req)
+}
+
+func (rtm *RefTypeManager) GetSender(req SendRefTypeRequest) *RefTypeSender {
+	return &RefTypeSender{
+		man: rtm,
+		req: req,
+	}
 }

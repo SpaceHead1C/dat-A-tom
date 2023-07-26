@@ -14,6 +14,39 @@ type Sender interface {
 	SetSentState(context.Context, db.Transaction) error
 }
 
+type RecordSender struct {
+	man *RecordManager
+	req domain.SendRecordRequest
+}
+
+func (rs *RecordSender) Send(ctx context.Context) error {
+	return rs.man.Send(ctx, rs.req)
+}
+
+func (rs *RecordSender) SumEqualsSent(ctx context.Context, transaction db.Transaction) (bool, error) {
+	state, err := rs.man.GetSentState(ctx, rs.req.ID, transaction)
+	if err != nil {
+		if errors.Is(err, domain.ErrSentDataNotFound) {
+			return false, nil
+		}
+		return false, err
+	}
+	return state.Sum == rs.req.Sum, nil
+}
+
+func (rs *RecordSender) SetSentState(ctx context.Context, transaction db.Transaction) error {
+	_, err := rs.man.SetSentState(
+		ctx,
+		domain.RecordSentState{
+			ID:     rs.req.ID,
+			Sum:    rs.req.Sum,
+			SentAt: time.Now().UTC(),
+		},
+		transaction,
+	)
+	return err
+}
+
 type RefTypeSender struct {
 	man *RefTypeManager
 	req domain.SendRefTypeRequest

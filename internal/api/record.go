@@ -18,12 +18,16 @@ type RecordManager struct {
 
 type RecordConfig struct {
 	Repository RecordRepository
+	Broker     RecordBroker
 	Timeout    time.Duration
 }
 
 func NewRecordManager(c RecordConfig) (*RecordManager, error) {
 	if c.Repository == nil {
-		return nil, fmt.Errorf("record repository can't be nil")
+		return nil, fmt.Errorf("record repository can not be nil")
+	}
+	if c.Broker == nil {
+		return nil, fmt.Errorf("record broker can not be nil")
 	}
 	if c.Timeout == 0 {
 		c.Timeout = defaultRecordManagerTimeout
@@ -59,4 +63,17 @@ func (rm *RecordManager) SetSentState(ctx context.Context, state RecordSentState
 	ctx, cancel := context.WithTimeout(ctx, rm.Timeout)
 	defer cancel()
 	return rm.Repository.SetSentRecord(ctx, state, transaction)
+}
+
+func (rm *RecordManager) Send(ctx context.Context, req SendRecordRequest) error {
+	ctx, cancel := context.WithTimeout(ctx, rm.Timeout)
+	defer cancel()
+	return rm.Broker.SendRecord(ctx, req)
+}
+
+func (rm *RecordManager) GetSender(req SendRecordRequest) *RecordSender {
+	return &RecordSender{
+		man: rm,
+		req: req,
+	}
 }

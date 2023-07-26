@@ -121,6 +121,7 @@ func main() {
 
 	recordManager, err := api.NewRecordManager(api.RecordConfig{
 		Repository: repo,
+		Broker:     broker,
 		Timeout:    time.Second,
 	})
 	if err != nil {
