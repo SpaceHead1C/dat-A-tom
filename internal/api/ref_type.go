@@ -18,6 +18,7 @@ type RefTypeManager struct {
 
 type RefTypeConfig struct {
 	Repository RefTypeRepository
+	Broker     RefTypeBroker
 	Timeout    time.Duration
 }
 
@@ -41,6 +42,22 @@ func (rtm *RefTypeManager) Update(ctx context.Context, req UpdRefTypeRequest) (*
 	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
 	defer cancel()
 	return rtm.Repository.UpdateRefType(ctx, req)
+}
+
+func (rtm *RefTypeManager) Send(ctx context.Context, req SendRefTypeRequest) error {
+	if rtm.Broker == nil {
+		return errors.New("reference type broker not initialised")
+	}
+	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
+	defer cancel()
+	return rtm.Broker.SendRefType(ctx, req)
+}
+
+func (rtm *RefTypeManager) GetSender(req SendRefTypeRequest) *RefTypeSender {
+	return &RefTypeSender{
+		man: rtm,
+		req: req,
+	}
 }
 
 func (rtm *RefTypeManager) Get(ctx context.Context, id uuid.UUID) (*RefType, error) {
