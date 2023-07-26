@@ -26,7 +26,7 @@ func newPgRepo(t *testing.T) *pg.Repository {
 	if err != nil {
 		t.Fatal(err)
 	}
-	db, err := pkgpg.NewConnConfig(pkgpg.Config{
+	db, err := pkgpg.NewPoolConfig(pkgpg.Config{
 		Address:      os.Getenv("TEST_POSTGRES_HOST"),
 		Port:         uint(port),
 		User:         os.Getenv("TEST_POSTGRES_USER"),
