@@ -14,6 +14,7 @@ import (
 	pkglog "datatom/pkg/log"
 	pkgrmq "datatom/pkg/message_broker/rmq"
 	"datatom/rest"
+	"github.com/go-co-op/gocron"
 
 	"log"
 	"os"
@@ -153,6 +154,10 @@ func main() {
 		Repository: repo,
 		Timeout:    time.Second,
 	})
+	if err != nil {
+		l.Fatal(err.Error())
+	}
+	l.Info("stored configs manager configured")
 
 	dwGRPCConn := grpc.NewConnection(grpc.Config{
 		Logger:  l,
@@ -211,6 +216,19 @@ func main() {
 		}
 		return nil
 	})
+
+	s := gocron.NewScheduler(time.UTC)
+
+	if amqConn != nil && c.DWExchange != "" {
+		if _, err := s.Every(10).Second().SingletonMode().Do(func() error {
+			l.Infof("routine started at %s", time.Now())
+			return nil
+		}); err != nil {
+			l.Fatalf("add routine job error: %s", err)
+		}
+	}
+	s.StartAsync()
+	l.Infof("routines are running")
 
 	l.Infof("%s service is up", internal.ServiceName)
 
