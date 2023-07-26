@@ -92,8 +92,25 @@ func main() {
 	defer amqConn.Close()
 	l.Infoln("RMQ connection established")
 
+	publisher, err := pkgrmq.NewPublisher(pkgrmq.PublisherConfig{
+		Logger:   l,
+		Conn:     amqConn,
+		Exchange: c.DWExchange,
+	})
+	if err != nil {
+		l.Fatal(err.Error())
+	}
+	defer publisher.Close()
+	l.Infoln("RMQ publisher configured")
+
+	broker, err := rmq.NewBroker(rmq.Config{
+		Publisher: publisher,
+		Logger:    l,
+	})
+
 	refTypeManager, err := api.NewRefTypeManager(api.RefTypeConfig{
 		Repository: repo,
+		Broker:     broker,
 		Timeout:    time.Second,
 	})
 	if err != nil {

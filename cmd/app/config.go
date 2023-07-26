@@ -29,6 +29,9 @@ type config struct {
 	RMQVHost        string `conf:"flag:rmq_vhost,env:RMQ_VHOST" toml:"rmq_vhost"`
 	RMQConsumeQueue string `conf:"flag:rmq_consume_queue,env:RMQ_CONSUME_QUEUE" toml:"rmq_consume_queue"`
 	RMQDLE          string `conf:"flag:rmq_dle,env:RMQ_DLE" toml:"rmq_dle"`
+
+	DWExchange   string `conf:"flag:dw_exchange,env:DW_EXCHANGE" toml:"dw_exchange"`
+	DWRoutingKey string `conf:"flag:dw_routing_key,env:DW_ROUTING_KEY" toml:"dw_routing_key"`
 }
 
 func newConfig() *config {

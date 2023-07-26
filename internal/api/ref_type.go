@@ -24,7 +24,10 @@ type RefTypeConfig struct {
 
 func NewRefTypeManager(c RefTypeConfig) (*RefTypeManager, error) {
 	if c.Repository == nil {
-		return nil, fmt.Errorf("reference type repository can't be nil")
+		return nil, fmt.Errorf("reference type repository can not be nil")
+	}
+	if c.Broker == nil {
+		return nil, fmt.Errorf("reference type broker can not be nil")
 	}
 	if c.Timeout == 0 {
 		c.Timeout = defaultRefTypeManagerTimeout
@@ -45,9 +48,6 @@ func (rtm *RefTypeManager) Update(ctx context.Context, req UpdRefTypeRequest) (*
 }
 
 func (rtm *RefTypeManager) Send(ctx context.Context, req SendRefTypeRequest) error {
-	if rtm.Broker == nil {
-		return errors.New("reference type broker not initialised")
-	}
 	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
 	defer cancel()
 	return rtm.Broker.SendRefType(ctx, req)
