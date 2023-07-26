@@ -53,6 +53,12 @@ func (rm *RecordManager) Get(ctx context.Context, id uuid.UUID) (*Record, error)
 	return rm.Repository.GetRecord(ctx, id)
 }
 
+func (rm *RecordManager) GetByKey(ctx context.Context, key []byte) (*Record, error) {
+	ctx, cancel := context.WithTimeout(ctx, rm.Timeout)
+	defer cancel()
+	return rm.Repository.GetRecordByKey(ctx, key)
+}
+
 func (rm *RecordManager) GetSentState(ctx context.Context, id uuid.UUID, transaction db.Transaction) (*RecordSentState, error) {
 	ctx, cancel := context.WithTimeout(ctx, rm.Timeout)
 	defer cancel()
