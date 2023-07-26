@@ -13,7 +13,7 @@ import (
 	pkglog "datatom/pkg/log"
 	pkgrmq "datatom/pkg/message_broker/rmq"
 	"datatom/rest"
-	amqp "github.com/rabbitmq/amqp091-go"
+
 	"log"
 	"os"
 	"time"
