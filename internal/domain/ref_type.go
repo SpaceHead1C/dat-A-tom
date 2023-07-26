@@ -18,6 +18,10 @@ type RefTypeRepository interface {
 	SetSentRefType(context.Context, RefTypeSentState, db.Transaction) (*RefTypeSentState, error)
 }
 
+type RefTypeBroker interface {
+	SendRefType(context.Context, SendRefTypeRequest) error
+}
+
 type RefType struct {
 	ID          uuid.UUID
 	Name        string
@@ -41,4 +45,11 @@ type UpdRefTypeRequest struct {
 	ID          uuid.UUID
 	Name        *string
 	Description *string
+}
+
+type SendRefTypeRequest struct {
+	RefType
+	TomID       uuid.UUID
+	Exchange    string
+	RoutingKeys []string
 }
