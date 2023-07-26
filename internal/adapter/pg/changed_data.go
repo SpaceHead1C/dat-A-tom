@@ -3,6 +3,7 @@ package pg
 import (
 	"context"
 	"datatom/internal/domain"
+	"datatom/pkg/db"
 	"datatom/pkg/db/pg"
 	"fmt"
 )
@@ -31,4 +32,17 @@ func (r *Repository) GetChanges(ctx context.Context) ([]domain.ChangedData, erro
 		})
 	}
 	return out, nil
+}
+
+func (r *Repository) PurgeChanges(ctx context.Context, id int64, tx db.Transaction) error {
+	query := `SELECT purge_changes($1);`
+	queryRow, err := funcQueryRow(r, tx)
+	if err != nil {
+		return fmt.Errorf("transaction error: %w", err)
+	}
+	var deleted int64
+	if err := queryRow(ctx, query, id).Scan(&deleted); err != nil {
+		return fmt.Errorf("database error: %w, %s", err, query)
+	}
+	return nil
 }

@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"datatom/pkg/db"
 	"fmt"
 )
 
@@ -9,6 +10,7 @@ type ChangedDataType uint
 
 type ChangedDataRepository interface {
 	GetChanges(context.Context) ([]ChangedData, error)
+	PurgeChanges(context.Context, int64, db.Transaction) error
 }
 
 type ChangedData struct {

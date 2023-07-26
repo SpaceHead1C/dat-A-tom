@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"datatom/internal/domain"
+	"datatom/pkg/db"
 	"fmt"
 	"time"
 )
@@ -32,4 +33,10 @@ func (cdm *ChangedDataManager) Get(ctx context.Context) ([]domain.ChangedData, e
 	ctx, cancel := context.WithTimeout(ctx, cdm.Timeout)
 	defer cancel()
 	return cdm.Repository.GetChanges(ctx)
+}
+
+func (cdm *ChangedDataManager) Purge(ctx context.Context, id int64, transaction db.Transaction) error {
+	ctx, cancel := context.WithTimeout(ctx, cdm.Timeout)
+	defer cancel()
+	return cdm.Repository.PurgeChanges(ctx, id, transaction)
 }
