@@ -4,6 +4,7 @@ import (
 	"context"
 	. "datatom/internal/domain"
 	"datatom/pkg/db/pg"
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -55,13 +56,17 @@ func (r *Repository) UpdateRefType(ctx context.Context, req UpdRefTypeRequest) (
 }
 
 func (r *Repository) GetRefType(ctx context.Context, id uuid.UUID) (*RefType, error) {
-	query := `SELECT * FROM get_ref_type($1);`
-	var out RefType
-	if err := r.QueryRow(ctx, query, id).Scan(&out.ID, &out.Name, &out.Description); err != nil {
+	var refTypeJSON []byte
+	query := `SELECT get_ref_type($1);`
+	if err := r.QueryRow(ctx, query, id).Scan(&refTypeJSON); err != nil {
 		if pg.IsNoRowsError(err) {
 			return nil, ErrRefTypeNotFound
 		}
 		return nil, fmt.Errorf("database error: %w, %s", err, query)
 	}
-	return &out, nil
+	var schema RefTypeSchema
+	if err := json.Unmarshal(refTypeJSON, &schema); err != nil {
+		return nil, fmt.Errorf("db result unmarshal error: %s, %s", err, refTypeJSON)
+	}
+	return schema.RefType(), nil
 }

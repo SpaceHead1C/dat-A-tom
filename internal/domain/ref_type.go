@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -18,6 +19,8 @@ type RefType struct {
 	ID          uuid.UUID
 	Name        string
 	Description string
+	Sum         string
+	ChangeAt    time.Time
 }
 
 type AddRefTypeRequest struct {
