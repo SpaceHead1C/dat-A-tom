@@ -1,56 +1,173 @@
 package test
 
 import (
-	"context"
 	"datatom/internal/domain"
-	"fmt"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestSetValue(t *testing.T) {
-	mngr := newTestValueManager(t)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
-	defer cancel()
-	o, err := mngr.Set(ctx, domain.SetValueRequest{
-		RecordID:   uuid.MustParse("11111111-1111-1111-1111-111111111111"),
-		PropertyID: uuid.MustParse("22222222-2222-2222-2222-222222222222"),
-		Type:       domain.TypeText,
-		Value:      "hello",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log("=== Value ===")
-	t.Log("record ID:", o.RecordID.String())
-	t.Log("property ID:", o.PropertyID.String())
-	t.Log("type:", o.Type.String())
-	t.Log("reference type ID:", o.RefTypeID.String())
-	t.Log("value:", fmt.Sprintf("%v", o.Value))
-	t.Log("hash sum:", o.Sum)
-	t.Log("change at:", o.ChangeAt)
+type ValueTypeTestSuite struct {
+	suite.Suite
 }
 
-func TestChangedValues(t *testing.T) {
-	mngr := newTestValueManager(t)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
-	defer cancel()
-	vs, err := mngr.ChangedValues(ctx)
-	if err != nil {
-		t.Fatal(err)
+func TestValueType(t *testing.T) {
+	suite.Run(t, new(ValueTypeTestSuite))
+}
+
+func (s *ValueTypeTestSuite) TestValueAsJSON() {
+	type args struct {
+		v any
+		t domain.Type
 	}
-	for _, v := range vs {
-		t.Logf(`=== Value ===
-record ID: %s
-property ID: %s
-type: %s
-reference type ID: %s
-value: %v
-hash sum: %s
-change at: %s`,
-			v.RecordID.String(), v.PropertyID.String(), v.Type.String(), v.RefTypeID.String(), v.Value, v.Sum, v.ChangeAt,
-		)
+	type testCase struct {
+		name string
+		args args
+		want []byte
+	}
+	tests := []testCase{
+		{
+			name: "value as text",
+			args: args{"text", domain.TypeText},
+			want: []byte(`{"v":"text"}`),
+		},
+		{
+			name: "value as empty text",
+			args: args{"", domain.TypeText},
+			want: []byte(`{"v":""}`),
+		},
+		{
+			name: "value as boolean",
+			args: args{true, domain.TypeBool},
+			want: []byte(`{"v":true}`),
+		},
+		{
+			name: "value as date",
+			args: args{time.Date(2023, 2, 13, 21, 21, 21, 0, time.UTC), domain.TypeDate},
+			want: []byte(`{"v":"2023-02-13T21:21:21Z"}`),
+		},
+		{
+			name: "value as string date",
+			args: args{"2023-02-13T21:21:21-07:00", domain.TypeDate},
+			want: []byte(`{"v":"2023-02-13T21:21:21-07:00"}`),
+		},
+		{
+			name: "value as int number",
+			args: args{7, domain.TypeNumber},
+			want: []byte(`{"v":7}`),
+		},
+		{
+			name: "value as real number",
+			args: args{7.7, domain.TypeNumber},
+			want: []byte(`{"v":7.7}`),
+		},
+		{
+			name: "value as reference ID",
+			args: args{uuid.MustParse("12345678-4321-0123-4567-123456789abc"), domain.TypeReference},
+			want: []byte(`{"v":"12345678-4321-0123-4567-123456789abc"}`),
+		},
+		{
+			name: "value as string reference ID",
+			args: args{"12345678-4321-0123-4567-123456789abc", domain.TypeReference},
+			want: []byte(`{"v":"12345678-4321-0123-4567-123456789abc"}`),
+		},
+		{
+			name: "value as nil reference ID",
+			args: args{uuid.Nil, domain.TypeReference},
+			want: []byte(`{"v":"00000000-0000-0000-0000-000000000000"}`),
+		},
+		{
+			name: "value as UUID",
+			args: args{uuid.MustParse("12345678-4321-0123-4567-123456789abc"), domain.TypeUUID},
+			want: []byte(`{"v":"12345678-4321-0123-4567-123456789abc"}`),
+		},
+		{
+			name: "value as string UUID",
+			args: args{"12345678-4321-0123-4567-123456789abc", domain.TypeUUID},
+			want: []byte(`{"v":"12345678-4321-0123-4567-123456789abc"}`),
+		},
+		{
+			name: "value as nil UUID",
+			args: args{uuid.Nil, domain.TypeUUID},
+			want: []byte(`{"v":"00000000-0000-0000-0000-000000000000"}`),
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			out, err := domain.ValueAsJSON(test.args.v, test.args.t)
+			s.Require().NoError(err, "domain.ValueAsJSON(%v, %v): %s", test.args.v, test.args.t)
+			s.EqualValues(test.want, out, "domain.ValueAsJSON(%v, %v)", test.args.v, test.args.t)
+		})
+	}
+}
+
+func (s *ValueTypeTestSuite) TestValueAsJSONError() {
+	type args struct {
+		v any
+		t domain.Type
+	}
+	type testCase struct {
+		name string
+		args args
+		err  error
+	}
+	tests := []testCase{
+		{
+			name: "value not as text",
+			args: args{1337, domain.TypeText},
+			err:  domain.ErrUnexpectedTypePG,
+		},
+		{
+			name: "value not as boolean",
+			args: args{"true", domain.TypeBool},
+			err:  domain.ErrUnexpectedTypePG,
+		},
+		{
+			name: "value as invalid string date",
+			args: args{"2023-02-13T21:21:21Z-07:00", domain.TypeDate},
+			err:  domain.ErrParseError,
+		},
+		{
+			name: "value not as date",
+			args: args{1676348481, domain.TypeDate},
+			err:  domain.ErrUnexpectedTypePG,
+		},
+		{
+			name: "value as not number",
+			args: args{"7", domain.TypeNumber},
+			err:  domain.ErrUnexpectedTypePG,
+		},
+		{
+			name: "value not as reference ID",
+			args: args{nil, domain.TypeReference},
+			err:  domain.ErrUnexpectedTypePG,
+		},
+		{
+			name: "value as invalid string reference ID",
+			args: args{"12345678-4321-0123-4567-123456789xyz", domain.TypeReference},
+			err:  domain.ErrParseError,
+		},
+		{
+			name: "value not as UUID",
+			args: args{nil, domain.TypeUUID},
+			err:  domain.ErrUnexpectedTypePG,
+		},
+		{
+			name: "value as invalid string UUID",
+			args: args{"12345678-4321-0123-4567-123456789xyz", domain.TypeUUID},
+			err:  domain.ErrParseError,
+		},
+	}
+
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			out, err := domain.ValueAsJSON(test.args.v, test.args.t)
+			s.Require().Error(err, "domain.ValueAsJSON(%v, %v)", test.args.v, test.args.t)
+			s.Require().ErrorIs(err, test.err, "domain.ValueAsJSON(%v, %v)", test.args.v, test.args.t)
+			s.Nil(out, "domain.ValueAsJSON(%v, %v)", test.args.v, test.args.t)
+		})
 	}
 }
