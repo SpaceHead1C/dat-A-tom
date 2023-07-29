@@ -2,14 +2,17 @@ package test
 
 import (
 	"context"
+	"os"
+	"reflect"
+	"runtime"
+	"strconv"
+	"testing"
+	"time"
+
 	"datatom/internal/adapter/pg"
 	"datatom/internal/api"
 	pkgpg "datatom/pkg/db/pg"
 	"datatom/pkg/log"
-	"os"
-	"strconv"
-	"testing"
-	"time"
 
 	"github.com/subosito/gotenv"
 )
@@ -118,4 +121,11 @@ func newTestStoredConfigsManager(t *testing.T) *api.StoredConfigsManager {
 		t.Fatal(err)
 	}
 	return out
+}
+
+func funcName(t *testing.T, f any) string {
+	if reflect.ValueOf(f).Kind() != reflect.Func {
+		t.Fatalf("%v is not a function", f)
+	}
+	return runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name()
 }
