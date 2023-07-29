@@ -97,7 +97,7 @@ func (s *ValueTypeTestSuite) TestValueAsJSON() {
 	for _, test := range tests {
 		s.Run(test.name, func() {
 			out, err := domain.ValueAsJSON(test.args.v, test.args.t)
-			s.Require().NoError(err, "domain.ValueAsJSON(%v, %v): %s", test.args.v, test.args.t, err)
+			s.Require().NoError(err, "domain.ValueAsJSON(%v, %v)", test.args.v, test.args.t)
 			s.EqualValues(test.want, out, "domain.ValueAsJSON(%v, %v)", test.args.v, test.args.t)
 		})
 	}
@@ -245,7 +245,7 @@ func (s *ValueTypeTestSuite) TestValidatedValue() {
 	for _, test := range tests {
 		s.Run(test.name, func() {
 			out, err := domain.ValidatedValue(test.args.v, test.args.t)
-			s.Require().NoError(err, "domain.ValidatedValue(%v, %v): %s", test.args.v, test.args.t, err)
+			s.Require().NoError(err, "domain.ValidatedValue(%v, %v)", test.args.v, test.args.t)
 			s.EqualValues(test.want, out, "domain.ValidatedValue(%v, %v)", test.args.v, test.args.t)
 		})
 	}
