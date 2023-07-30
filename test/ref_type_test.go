@@ -2,56 +2,132 @@ package test
 
 import (
 	"context"
-	. "datatom/internal/domain"
 	"testing"
-	"time"
+
+	"datatom/internal/api"
+	"datatom/internal/domain"
+	"datatom/test/mocks"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestAddRefType(t *testing.T) {
-	mngr := newTestRefTypeManager(t)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
-	defer cancel()
-	id, err := mngr.Add(ctx, AddRefTypeRequest{
-		Name: "Группы магазинов для графиков",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(id.String())
+type RefTypeManagerTestSuite struct {
+	suite.Suite
+	man    *api.RefTypeManager
+	repo   *mocks.RefTypeRepository
+	broker *mocks.RefTypeBroker
 }
 
-func TestUpdateRefType(t *testing.T) {
-	mngr := newTestRefTypeManager(t)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
-	defer cancel()
-	description := "dscr"
-	rt, err := mngr.Update(ctx, UpdRefTypeRequest{
+func TestRefTypeManager(t *testing.T) {
+	suite.Run(t, new(RefTypeManagerTestSuite))
+}
+
+func (s *RefTypeManagerTestSuite) SetupTest() {
+	s.man, s.repo, s.broker = newTestRefTypeMockedManager(s.T())
+}
+
+func (s *RefTypeManagerTestSuite) TestAdd() {
+	id := uuid.MustParse("12345678-1234-1234-1234-123456789012")
+	req := domain.AddRefTypeRequest{Name: "rt"}
+	s.repo.On("AddRefType", mock.Anything, req).Return(id, nil)
+
+	type args struct {
+		ctx context.Context
+		req domain.AddRefTypeRequest
+	}
+	type testCase struct {
+		name string
+		args args
+		want uuid.UUID
+	}
+	tests := []testCase{
+		{
+			name: "add",
+			args: args{ctx: context.Background(), req: req},
+			want: id,
+		},
+	}
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			actual, err := s.man.Add(test.args.ctx, test.args.req)
+			s.Require().NoError(err)
+			s.EqualValues(test.want, actual)
+		})
+	}
+}
+
+func (s *RefTypeManagerTestSuite) TestUpdate() {
+	name := "name"
+	descr := "description"
+	req := domain.UpdRefTypeRequest{
 		ID:          uuid.MustParse("12345678-1234-1234-1234-123456789012"),
-		Description: &description,
-	})
-	if err != nil {
-		t.Fatal(err)
+		Name:        &name,
+		Description: &descr,
 	}
-	t.Log("=== Reference type ===")
-	t.Log("ID:", rt.ID.String())
-	t.Log("name:", rt.Name)
-	t.Log("description:", rt.Description)
+	rt := domain.RefType{
+		ID:          uuid.MustParse("12345678-1234-1234-1234-123456789012"),
+		Name:        "name",
+		Description: "description",
+	}
+	s.repo.On("UpdateRefType", mock.Anything, req).Return(&rt, nil)
+
+	type args struct {
+		ctx context.Context
+		req domain.UpdRefTypeRequest
+	}
+	type testCase struct {
+		name string
+		args args
+		want *domain.RefType
+	}
+	tests := []testCase{
+		{
+			name: "update",
+			args: args{ctx: context.Background(), req: req},
+			want: &rt,
+		},
+	}
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			actual, err := s.man.Update(test.args.ctx, test.args.req)
+			s.Require().NoError(err)
+			s.EqualValues(test.want, actual)
+		})
+	}
 }
 
-func TestGetRefType(t *testing.T) {
-	mngr := newTestRefTypeManager(t)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
-	defer cancel()
-	rt, err := mngr.Get(ctx, uuid.MustParse("12345678-1234-1234-1234-123456789012"))
-	if err != nil {
-		t.Fatal(err)
+func (s *RefTypeManagerTestSuite) TestGet() {
+	id := uuid.MustParse("12345678-1234-1234-1234-123456789012")
+	rt := domain.RefType{
+		ID:          id,
+		Name:        "name",
+		Description: "description",
 	}
-	t.Log("=== Reference type ===")
-	t.Log("ID:", rt.ID.String())
-	t.Log("name:", rt.Name)
-	t.Log("description:", rt.Description)
-	t.Log("sum:", rt.Sum)
-	t.Log("change at:", rt.ChangeAt)
+	s.repo.On("GetRefType", mock.Anything, id).Return(&rt, nil)
+
+	type args struct {
+		ctx context.Context
+		id  uuid.UUID
+	}
+	type testCase struct {
+		name string
+		args args
+		want *domain.RefType
+	}
+	tests := []testCase{
+		{
+			name: "get",
+			args: args{ctx: context.Background(), id: id},
+			want: &rt,
+		},
+	}
+	for _, test := range tests {
+		s.Run(test.name, func() {
+			actual, err := s.man.Get(test.args.ctx, test.args.id)
+			s.Require().NoError(err)
+			s.EqualValues(test.want, actual)
+		})
+	}
 }

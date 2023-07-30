@@ -13,6 +13,7 @@ import (
 	"datatom/internal/api"
 	pkgpg "datatom/pkg/db/pg"
 	"datatom/pkg/log"
+	"datatom/test/mocks"
 
 	"github.com/subosito/gotenv"
 )
@@ -51,16 +52,18 @@ func newPgRepo(t *testing.T) *pg.Repository {
 	return out
 }
 
-func newTestRefTypeManager(t *testing.T) *api.RefTypeManager {
-	repo := newPgRepo(t)
+func newTestRefTypeMockedManager(t *testing.T) (*api.RefTypeManager, *mocks.RefTypeRepository, *mocks.RefTypeBroker) {
+	repo := mocks.NewRefTypeRepository(t)
+	broker := mocks.NewRefTypeBroker(t)
 	out, err := api.NewRefTypeManager(api.RefTypeConfig{
 		Repository: repo,
+		Broker:     broker,
 		Timeout:    time.Second,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	return out
+	return out, repo, broker
 }
 
 func newTestRecordManager(t *testing.T) *api.RecordManager {
