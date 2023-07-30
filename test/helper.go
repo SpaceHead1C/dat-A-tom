@@ -66,16 +66,18 @@ func newTestRefTypeMockedManager(t *testing.T) (*api.RefTypeManager, *mocks.RefT
 	return out, repo, broker
 }
 
-func newTestRecordManager(t *testing.T) *api.RecordManager {
-	repo := newPgRepo(t)
+func newTestRecordMockedManager(t *testing.T) (*api.RecordManager, *mocks.RecordRepository, *mocks.RecordBroker) {
+	repo := mocks.NewRecordRepository(t)
+	broker := mocks.NewRecordBroker(t)
 	out, err := api.NewRecordManager(api.RecordConfig{
 		Repository: repo,
+		Broker:     broker,
 		Timeout:    time.Second,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	return out
+	return out, repo, broker
 }
 
 func newTestPropertyMockedManager(t *testing.T) (*api.PropertyManager, *mocks.PropertyRepository, *mocks.PropertyBroker) {

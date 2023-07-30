@@ -2,12 +2,13 @@ package test
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"datatom/internal/api"
 	"datatom/internal/domain"
 	"datatom/pkg/db"
 	"datatom/test/mocks"
-	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
