@@ -23,3 +23,5 @@
 *.toml
 
 /test/.env
+/test/mocks/*
+!/test/mocks/generate.go
