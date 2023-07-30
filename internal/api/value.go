@@ -46,9 +46,11 @@ func (vm *ValueManager) Get(ctx context.Context, req GetValueRequest) (*Value, e
 }
 
 func (vm *ValueManager) GetByKey(ctx context.Context, key []byte) (*Value, error) {
-	ctx, cancel := context.WithTimeout(ctx, vm.Timeout)
-	defer cancel()
-	return vm.Repository.GetValueByKey(ctx, key)
+	req, err := getValueRequestByKey(key)
+	if err != nil {
+		return nil, fmt.Errorf("invalid key error: %w, %s", err, key)
+	}
+	return vm.Get(ctx, *req)
 }
 
 func (vm *ValueManager) GetSentState(ctx context.Context, req GetValueRequest, transaction db.Transaction) (*ValueSentState, error) {

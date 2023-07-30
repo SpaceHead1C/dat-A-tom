@@ -54,9 +54,11 @@ func (rm *RecordManager) Get(ctx context.Context, id uuid.UUID) (*Record, error)
 }
 
 func (rm *RecordManager) GetByKey(ctx context.Context, key []byte) (*Record, error) {
-	ctx, cancel := context.WithTimeout(ctx, rm.Timeout)
-	defer cancel()
-	return rm.Repository.GetRecordByKey(ctx, key)
+	req, err := getDataRequestByKey(key)
+	if err != nil {
+		return nil, fmt.Errorf("invalid key error: %w, %s", err, key)
+	}
+	return rm.Get(ctx, req)
 }
 
 func (rm *RecordManager) GetSentState(ctx context.Context, id uuid.UUID, transaction db.Transaction) (*RecordSentState, error) {

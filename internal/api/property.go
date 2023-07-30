@@ -54,9 +54,11 @@ func (pm *PropertyManager) Get(ctx context.Context, id uuid.UUID) (*Property, er
 }
 
 func (pm *PropertyManager) GetByKey(ctx context.Context, key []byte) (*Property, error) {
-	ctx, cancel := context.WithTimeout(ctx, pm.Timeout)
-	defer cancel()
-	return pm.Repository.GetPropertyByKey(ctx, key)
+	req, err := getDataRequestByKey(key)
+	if err != nil {
+		return nil, fmt.Errorf("invalid key error: %w, %s", err, key)
+	}
+	return pm.Get(ctx, req)
 }
 
 func (pm *PropertyManager) GetSentState(ctx context.Context, id uuid.UUID, transaction db.Transaction) (*PropertySentState, error) {
