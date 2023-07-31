@@ -94,16 +94,18 @@ func newTestPropertyMockedManager(t *testing.T) (*api.PropertyManager, *mocks.Pr
 	return out, repo, broker
 }
 
-func newTestValueManager(t *testing.T) *api.ValueManager {
-	repo := newPgRepo(t)
+func newTestValueMockedManager(t *testing.T) (*api.ValueManager, *mocks.ValueRepository, *mocks.ValueBroker) {
+	repo := mocks.NewValueRepository(t)
+	broker := mocks.NewValueBroker(t)
 	out, err := api.NewValueManager(api.ValueConfig{
 		Repository: repo,
+		Broker:     broker,
 		Timeout:    time.Second,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	return out
+	return out, repo, broker
 }
 
 func newTestChangedDataManager(t *testing.T) *api.ChangedDataManager {
