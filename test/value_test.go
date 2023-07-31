@@ -35,7 +35,7 @@ func (s *ValueTypeTestSuite) TestValueAsJSON() {
 		args args
 		want []byte
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "value as text",
 			args: args{"text", domain.TypeText},
@@ -102,11 +102,11 @@ func (s *ValueTypeTestSuite) TestValueAsJSON() {
 			want: []byte(`{"v":"00000000-0000-0000-0000-000000000000"}`),
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			out, err := domain.ValueAsJSON(test.args.v, test.args.t)
-			s.Require().NoError(err, "domain.ValueAsJSON(%v, %v)", test.args.v, test.args.t)
-			s.EqualValues(test.want, out, "domain.ValueAsJSON(%v, %v)", test.args.v, test.args.t)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			out, err := domain.ValueAsJSON(c.args.v, c.args.t)
+			s.Require().NoError(err, "domain.ValueAsJSON(%v, %v)", c.args.v, c.args.t)
+			s.EqualValues(c.want, out, "domain.ValueAsJSON(%v, %v)", c.args.v, c.args.t)
 		})
 	}
 }
@@ -121,7 +121,7 @@ func (s *ValueTypeTestSuite) TestValueAsJSONError() {
 		args args
 		err  error
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "value not as text",
 			args: args{1337, domain.TypeText},
@@ -168,12 +168,12 @@ func (s *ValueTypeTestSuite) TestValueAsJSONError() {
 			err:  domain.ErrParseError,
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			out, err := domain.ValueAsJSON(test.args.v, test.args.t)
-			s.Require().Error(err, "domain.ValueAsJSON(%v, %v)", test.args.v, test.args.t)
-			s.Require().ErrorIs(err, test.err, "domain.ValueAsJSON(%v, %v)", test.args.v, test.args.t)
-			s.Nil(out, "domain.ValueAsJSON(%v, %v)", test.args.v, test.args.t)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			out, err := domain.ValueAsJSON(c.args.v, c.args.t)
+			s.Require().Error(err, "domain.ValueAsJSON(%v, %v)", c.args.v, c.args.t)
+			s.Require().ErrorIs(err, c.err, "domain.ValueAsJSON(%v, %v)", c.args.v, c.args.t)
+			s.Nil(out, "domain.ValueAsJSON(%v, %v)", c.args.v, c.args.t)
 		})
 	}
 }
@@ -188,7 +188,7 @@ func (s *ValueTypeTestSuite) TestValidatedValue() {
 		args args
 		want any
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "value is text",
 			args: args{"text", domain.TypeText},
@@ -250,11 +250,11 @@ func (s *ValueTypeTestSuite) TestValidatedValue() {
 			want: uuid.Nil,
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			out, err := domain.ValidatedValue(test.args.v, test.args.t)
-			s.Require().NoError(err, "domain.ValidatedValue(%v, %v)", test.args.v, test.args.t)
-			s.EqualValues(test.want, out, "domain.ValidatedValue(%v, %v)", test.args.v, test.args.t)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			out, err := domain.ValidatedValue(c.args.v, c.args.t)
+			s.Require().NoError(err, "domain.ValidatedValue(%v, %v)", c.args.v, c.args.t)
+			s.EqualValues(c.want, out, "domain.ValidatedValue(%v, %v)", c.args.v, c.args.t)
 		})
 	}
 }
@@ -269,7 +269,7 @@ func (s *ValueTypeTestSuite) TestValidatedValueError() {
 		args args
 		err  error
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "value is not text",
 			args: args{1337, domain.TypeText},
@@ -316,12 +316,12 @@ func (s *ValueTypeTestSuite) TestValidatedValueError() {
 			err:  domain.ErrParseError,
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			out, err := domain.ValidatedValue(test.args.v, test.args.t)
-			s.Require().Error(err, "domain.ValidatedValue(%v, %v)", test.args.v, test.args.t)
-			s.Require().ErrorIs(err, test.err, "domain.ValidatedValue(%v, %v)", test.args.v, test.args.t)
-			s.Nil(out, "domain.ValidatedValue(%v, %v)", test.args.v, test.args.t)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			out, err := domain.ValidatedValue(c.args.v, c.args.t)
+			s.Require().Error(err, "domain.ValidatedValue(%v, %v)", c.args.v, c.args.t)
+			s.Require().ErrorIs(err, c.err, "domain.ValidatedValue(%v, %v)", c.args.v, c.args.t)
+			s.Nil(out, "domain.ValidatedValue(%v, %v)", c.args.v, c.args.t)
 		})
 	}
 }
