@@ -44,18 +44,18 @@ func (s *RefTypeManagerTestSuite) TestAdd() {
 		args args
 		want uuid.UUID
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "add",
 			args: args{ctx: context.Background(), req: req},
 			want: id,
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			actual, err := s.man.Add(test.args.ctx, test.args.req)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual, err := s.man.Add(c.args.ctx, c.args.req)
 			s.Require().NoError(err)
-			s.EqualValues(test.want, actual)
+			s.EqualValues(c.want, actual)
 		})
 	}
 }
@@ -84,18 +84,18 @@ func (s *RefTypeManagerTestSuite) TestUpdate() {
 		args args
 		want *domain.RefType
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "update",
 			args: args{ctx: context.Background(), req: req},
 			want: &rt,
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			actual, err := s.man.Update(test.args.ctx, test.args.req)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual, err := s.man.Update(c.args.ctx, c.args.req)
 			s.Require().NoError(err)
-			s.EqualValues(test.want, actual)
+			s.EqualValues(c.want, actual)
 		})
 	}
 }
@@ -118,18 +118,18 @@ func (s *RefTypeManagerTestSuite) TestGet() {
 		args args
 		want *domain.RefType
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "get",
 			args: args{ctx: context.Background(), id: id},
 			want: &rt,
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			actual, err := s.man.Get(test.args.ctx, test.args.id)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual, err := s.man.Get(c.args.ctx, c.args.id)
 			s.Require().NoError(err)
-			s.EqualValues(test.want, actual)
+			s.EqualValues(c.want, actual)
 		})
 	}
 }
@@ -153,7 +153,7 @@ func (s *RefTypeManagerTestSuite) TestGetByKey() {
 		want    *domain.RefType
 		wantErr bool
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "get by key",
 			args: args{ctx: context.Background(), key: []byte(`{"id":"12345678-1234-1234-1234-123456789012"}`)},
@@ -180,15 +180,15 @@ func (s *RefTypeManagerTestSuite) TestGetByKey() {
 			wantErr: true,
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			actual, err := s.man.GetByKey(test.args.ctx, test.args.key)
-			if test.wantErr {
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual, err := s.man.GetByKey(c.args.ctx, c.args.key)
+			if c.wantErr {
 				s.Require().Error(err)
 				s.Nil(actual)
 			} else {
 				s.Require().NoError(err)
-				s.EqualValues(test.want, actual)
+				s.EqualValues(c.want, actual)
 			}
 		})
 	}
@@ -213,18 +213,18 @@ func (s *RefTypeManagerTestSuite) TestGetSentState() {
 		args args
 		want *domain.RefTypeSentState
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "get state",
 			args: args{ctx: context.Background(), id: id},
 			want: &rts,
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			actual, err := s.man.GetSentState(test.args.ctx, test.args.id, test.args.tx)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual, err := s.man.GetSentState(c.args.ctx, c.args.id, c.args.tx)
 			s.Require().NoError(err)
-			s.EqualValues(test.want, actual)
+			s.EqualValues(c.want, actual)
 		})
 	}
 }
@@ -246,18 +246,18 @@ func (s *RefTypeManagerTestSuite) TestSetSentState() {
 		args args
 		want *domain.RefTypeSentState
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "set state",
 			args: args{ctx: context.Background(), req: req},
 			want: &resp,
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			actual, err := s.man.SetSentState(test.args.ctx, test.args.req, test.args.tx)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual, err := s.man.SetSentState(c.args.ctx, c.args.req, c.args.tx)
 			s.Require().NoError(err)
-			s.EqualValues(test.want, actual)
+			s.EqualValues(c.want, actual)
 		})
 	}
 }
@@ -285,15 +285,15 @@ func (s *RefTypeManagerTestSuite) TestSend() {
 		name string
 		args args
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "send",
 			args: args{ctx: context.Background(), req: req},
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			err := s.man.Send(test.args.ctx, test.args.req)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			err := s.man.Send(c.args.ctx, c.args.req)
 			s.Require().NoError(err)
 		})
 	}
@@ -321,16 +321,16 @@ func (s *RefTypeManagerTestSuite) TestGetSender() {
 		args args
 		want *api.Sender
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "get sender",
 			args: args{req: req},
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			actual := s.man.GetSender(test.args.req)
-			s.Implements(test.want, actual)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual := s.man.GetSender(c.args.req)
+			s.Implements(c.want, actual)
 		})
 	}
 }

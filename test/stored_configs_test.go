@@ -23,18 +23,18 @@ func (s *StoredConfigTestSuite) TestStoredConfigGetFunc() {
 		sc   domain.StoredConfig
 		want string
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "Get function for tom ID",
 			sc:   domain.StoredConfigTomID,
 			want: funcName(s.T(), domain.StoredConfigRepository.GetStoredConfigDatawayTomID),
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			out, err := test.sc.GetFunc()
-			s.Require().NoError(err, "<%s>.GetFunc()", test.sc.String())
-			s.Equal(test.want, funcName(s.T(), out), "<%s>.GetFunc()", test.sc.String())
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			out, err := c.sc.GetFunc()
+			s.Require().NoError(err, "<%s>.GetFunc()", c.sc.String())
+			s.Equal(c.want, funcName(s.T(), out), "<%s>.GetFunc()", c.sc.String())
 		})
 	}
 	s.Run("Unknown stored config", func() {
@@ -53,7 +53,7 @@ func (s *StoredConfigTestSuite) TestScanStoredConfigValue() {
 		dest any
 		want any
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "Scan UUID in stored configs",
 			scv:  domain.StoredConfigUUID{Value: id},
@@ -61,11 +61,11 @@ func (s *StoredConfigTestSuite) TestScanStoredConfigValue() {
 			want: &id,
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			err := test.scv.ScanStoredConfigValue(test.dest)
-			s.Require().NoError(err, "domain.StoredConfigValue.ScanStoredConfigValue(%T)", test.dest)
-			s.EqualValues(test.want, test.dest, "domain.StoredConfigValue.ScanStoredConfigValue(%v) of type %T", test.dest, test.dest)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			err := c.scv.ScanStoredConfigValue(c.dest)
+			s.Require().NoError(err, "domain.StoredConfigValue.ScanStoredConfigValue(%T)", c.dest)
+			s.EqualValues(c.want, c.dest, "domain.StoredConfigValue.ScanStoredConfigValue(%v) of type %T", c.dest, c.dest)
 		})
 	}
 }
@@ -78,7 +78,7 @@ func (s *StoredConfigTestSuite) TestScanStoredConfigValueError() {
 		dest any
 		err  error
 	}
-	tests := []testCase{
+	cases := []testCase{
 		{
 			name: "Scan UUID in stored configs",
 			scv:  domain.StoredConfigUUID{Value: uuid.MustParse("12345678-1234-1234-1234-123456789012")},
@@ -86,11 +86,11 @@ func (s *StoredConfigTestSuite) TestScanStoredConfigValueError() {
 			err:  domain.ErrUnexpectedType,
 		},
 	}
-	for _, test := range tests {
-		s.Run(test.name, func() {
-			err := test.scv.ScanStoredConfigValue(test.dest)
-			s.Require().Error(err, "domain.StoredConfigValue.ScanStoredConfigValue(%T)", test.dest)
-			s.Require().ErrorIs(err, test.err, "domain.StoredConfigValue.ScanStoredConfigValue(%T)", test.dest)
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			err := c.scv.ScanStoredConfigValue(c.dest)
+			s.Require().Error(err, "domain.StoredConfigValue.ScanStoredConfigValue(%T)", c.dest)
+			s.Require().ErrorIs(err, c.err, "domain.StoredConfigValue.ScanStoredConfigValue(%T)", c.dest)
 		})
 	}
 }
