@@ -559,9 +559,9 @@ func (s *ValueManagerTestSuite) TestGetSentState() {
 		},
 		{
 			name:    "get state error not found",
-			args:    args{ctx: context.Background(), req: req},
+			args:    args{ctx: context.Background(), req: reqENF},
 			wantErr: true,
-			err:     domain.ErrNotFound,
+			err:     domain.ErrSentDataNotFound,
 		},
 	}
 	for _, c := range cases {
