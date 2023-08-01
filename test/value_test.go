@@ -659,8 +659,9 @@ func (s *ValueManagerTestSuite) TestSend() {
 			args: args{ctx: context.Background(), req: req},
 		},
 		{
-			name: "send error",
-			args: args{ctx: context.Background(), req: reqE},
+			name:    "send error",
+			args:    args{ctx: context.Background(), req: reqE},
+			wantErr: true,
 		},
 	}
 	for _, c := range cases {
