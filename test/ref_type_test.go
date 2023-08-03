@@ -556,17 +556,17 @@ func (s *RefTypeHandlersTestSuite) TestUpdate() {
 	}
 	reqEDescr := handlers.UpdRefTypeRequestSchema{
 		ID:   mockReq.ID.String(),
-		Name: mockReqENF.Name,
+		Name: mockReq.Name,
 	}
 	reqEParse := handlers.UpdRefTypeRequestSchema{
 		ID:          "hello",
-		Name:        mockReqENF.Name,
-		Description: mockReqENF.Description,
+		Name:        mockReq.Name,
+		Description: mockReq.Description,
 	}
 	rt := &domain.RefType{
 		ID:          uuid.MustParse("12345678-1234-1234-1234-123456789012"),
-		Name:        "name",
-		Description: "description",
+		Name:        name,
+		Description: descr,
 	}
 	s.repo.
 		On("UpdateRefType", mock.Anything, mockReq).Return(rt, nil).
@@ -665,6 +665,7 @@ func (s *RefTypeHandlersTestSuite) TestPatch() {
 		ID:   uuid.MustParse(id),
 		Name: &name,
 	}
+	mockReqWoAll := domain.UpdRefTypeRequest{ID: uuid.MustParse(id)}
 	mockReqE := domain.UpdRefTypeRequest{
 		ID:          uuid.MustParse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
 		Name:        &name,
@@ -686,8 +687,9 @@ func (s *RefTypeHandlersTestSuite) TestPatch() {
 	}
 	reqWoD := handlers.UpdRefTypeRequestSchema{
 		ID:   mockReq.ID.String(),
-		Name: mockReqENF.Name,
+		Name: mockReq.Name,
 	}
+	reqWoAll := handlers.UpdRefTypeRequestSchema{ID: mockReq.ID.String()}
 	reqE := handlers.UpdRefTypeRequestSchema{
 		ID:          mockReqE.ID.String(),
 		Name:        mockReqE.Name,
@@ -713,6 +715,7 @@ func (s *RefTypeHandlersTestSuite) TestPatch() {
 		On("UpdateRefType", mock.Anything, mockReq).Return(rt, nil).
 		On("UpdateRefType", mock.Anything, mockReqWoN).Return(rt, nil).
 		On("UpdateRefType", mock.Anything, mockReqWoD).Return(rt, nil).
+		On("UpdateRefType", mock.Anything, mockReqWoAll).Return(rt, nil).
 		On("UpdateRefType", mock.Anything, mockReqE).Return(nil, errors.New("error")).
 		On("UpdateRefType", mock.Anything, mockReqENF).Return(nil, domain.ErrRefTypeNotFound)
 
@@ -747,6 +750,14 @@ func (s *RefTypeHandlersTestSuite) TestPatch() {
 		{
 			name: "patch without description",
 			args: args{ctx: context.Background(), req: reqWoD},
+			want: handlers.Result{
+				Status:  http.StatusOK,
+				Payload: payload,
+			},
+		},
+		{
+			name: "patch only ID",
+			args: args{ctx: context.Background(), req: reqWoAll},
 			want: handlers.Result{
 				Status:  http.StatusOK,
 				Payload: payload,

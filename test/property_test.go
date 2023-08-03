@@ -669,13 +669,13 @@ func (s *PropertyHandlersTestSuite) TestUpdate() {
 		Name:        mockReqENF.Name,
 		Description: mockReqENF.Description,
 	}
-	rt := &domain.Property{
+	prop := &domain.Property{
 		ID:          uuid.MustParse("12345678-1234-1234-1234-123456789012"),
-		Name:        "name",
-		Description: "description",
+		Name:        name,
+		Description: descr,
 	}
 	s.repo.
-		On("UpdateProperty", mock.Anything, mockReq).Return(rt, nil).
+		On("UpdateProperty", mock.Anything, mockReq).Return(prop, nil).
 		On("UpdateProperty", mock.Anything, mockReqE).Return(nil, errors.New("error")).
 		On("UpdateProperty", mock.Anything, mockReqENF).Return(nil, domain.ErrPropertyNotFound)
 
@@ -771,6 +771,7 @@ func (s *PropertyHandlersTestSuite) TestPatch() {
 		ID:   uuid.MustParse(id),
 		Name: &name,
 	}
+	mockReqWoAll := domain.UpdPropertyRequest{ID: uuid.MustParse(id)}
 	mockReqE := domain.UpdPropertyRequest{
 		ID:          uuid.MustParse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
 		Name:        &name,
@@ -792,8 +793,9 @@ func (s *PropertyHandlersTestSuite) TestPatch() {
 	}
 	reqWoD := handlers.UpdPropertyRequestSchema{
 		ID:   mockReq.ID.String(),
-		Name: mockReqENF.Name,
+		Name: mockReq.Name,
 	}
+	reqWoAll := handlers.UpdPropertyRequestSchema{ID: mockReq.ID.String()}
 	reqE := handlers.UpdPropertyRequestSchema{
 		ID:          mockReqE.ID.String(),
 		Name:        mockReqE.Name,
@@ -811,8 +813,8 @@ func (s *PropertyHandlersTestSuite) TestPatch() {
 	}
 	prop := &domain.Property{
 		ID:          uuid.MustParse("12345678-1234-1234-1234-123456789012"),
-		Name:        "name",
-		Description: "description",
+		Name:        name,
+		Description: descr,
 		Types:       []domain.Type{domain.TypeText},
 	}
 	payload := []byte(fmt.Sprintf(`{"id":"%s","name":"%s","description":"%s","types":["%s"],"reference_type_ids":null,"owner_reference_type_id":null}`, id, name, descr, prop.Types[0].Code()))
@@ -820,6 +822,7 @@ func (s *PropertyHandlersTestSuite) TestPatch() {
 		On("UpdateProperty", mock.Anything, mockReq).Return(prop, nil).
 		On("UpdateProperty", mock.Anything, mockReqWoN).Return(prop, nil).
 		On("UpdateProperty", mock.Anything, mockReqWoD).Return(prop, nil).
+		On("UpdateProperty", mock.Anything, mockReqWoAll).Return(prop, nil).
 		On("UpdateProperty", mock.Anything, mockReqE).Return(nil, errors.New("error")).
 		On("UpdateProperty", mock.Anything, mockReqENF).Return(nil, domain.ErrPropertyNotFound)
 
@@ -854,6 +857,14 @@ func (s *PropertyHandlersTestSuite) TestPatch() {
 		{
 			name: "patch without description",
 			args: args{ctx: context.Background(), req: reqWoD},
+			want: handlers.Result{
+				Status:  http.StatusOK,
+				Payload: payload,
+			},
+		},
+		{
+			name: "patch only ID",
+			args: args{ctx: context.Background(), req: reqWoAll},
 			want: handlers.Result{
 				Status:  http.StatusOK,
 				Payload: payload,
