@@ -657,6 +657,14 @@ func (s *RefTypeHandlersTestSuite) TestPatch() {
 		Name:        &name,
 		Description: &descr,
 	}
+	mockReqWoN := domain.UpdRefTypeRequest{
+		ID:          uuid.MustParse(id),
+		Description: &descr,
+	}
+	mockReqWoD := domain.UpdRefTypeRequest{
+		ID:   uuid.MustParse(id),
+		Name: &name,
+	}
 	mockReqE := domain.UpdRefTypeRequest{
 		ID:          uuid.MustParse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
 		Name:        &name,
@@ -671,6 +679,14 @@ func (s *RefTypeHandlersTestSuite) TestPatch() {
 		ID:          mockReq.ID.String(),
 		Name:        mockReq.Name,
 		Description: mockReq.Description,
+	}
+	reqWoN := handlers.UpdRefTypeRequestSchema{
+		ID:          mockReq.ID.String(),
+		Description: mockReq.Description,
+	}
+	reqWoD := handlers.UpdRefTypeRequestSchema{
+		ID:   mockReq.ID.String(),
+		Name: mockReqENF.Name,
 	}
 	reqE := handlers.UpdRefTypeRequestSchema{
 		ID:          mockReqE.ID.String(),
@@ -695,6 +711,8 @@ func (s *RefTypeHandlersTestSuite) TestPatch() {
 	payload := []byte(fmt.Sprintf(`{"id":"%s","name":"%s","description":"%s"}`, id, name, descr))
 	s.repo.
 		On("UpdateRefType", mock.Anything, mockReq).Return(rt, nil).
+		On("UpdateRefType", mock.Anything, mockReqWoN).Return(rt, nil).
+		On("UpdateRefType", mock.Anything, mockReqWoD).Return(rt, nil).
 		On("UpdateRefType", mock.Anything, mockReqE).Return(nil, errors.New("error")).
 		On("UpdateRefType", mock.Anything, mockReqENF).Return(nil, domain.ErrRefTypeNotFound)
 
@@ -713,6 +731,22 @@ func (s *RefTypeHandlersTestSuite) TestPatch() {
 		{
 			name: "patch",
 			args: args{ctx: context.Background(), req: req},
+			want: handlers.Result{
+				Status:  http.StatusOK,
+				Payload: payload,
+			},
+		},
+		{
+			name: "patch without name",
+			args: args{ctx: context.Background(), req: reqWoN},
+			want: handlers.Result{
+				Status:  http.StatusOK,
+				Payload: payload,
+			},
+		},
+		{
+			name: "patch without description",
+			args: args{ctx: context.Background(), req: reqWoD},
 			want: handlers.Result{
 				Status:  http.StatusOK,
 				Payload: payload,
