@@ -888,6 +888,8 @@ func (s *RecordHandlersTestSuite) TestPatch() {
 
 func (s *RecordHandlersTestSuite) TestGet() {
 	id := "12345678-1234-1234-1234-123456789012"
+	idR := "11111111-1111-1111-1111-111111111111"
+	idRT := "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
 	idE := "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"
 	idENF := "ffffffff-ffff-ffff-ffff-ffffffffffff"
 	name := "name"
@@ -899,10 +901,19 @@ func (s *RecordHandlersTestSuite) TestGet() {
 		Description:  descr,
 		DeletionMark: delMark,
 	}
+	recRT := &domain.Record{
+		ID:              uuid.MustParse(idR),
+		Name:            name,
+		Description:     descr,
+		DeletionMark:    delMark,
+		ReferenceTypeID: uuid.MustParse(idRT),
+	}
 	payload := []byte(fmt.Sprintf(`{"id":"%s","name":"%s","description":"%s","deletion_mark":%v,"reference_type_id":null}`, id, name, descr, delMark))
+	payloadRT := []byte(fmt.Sprintf(`{"id":"%s","name":"%s","description":"%s","deletion_mark":%v,"reference_type_id":"%s"}`, idR, name, descr, delMark, idRT))
 	payloadE := []byte("parse record id error: ")
 	s.repo.
 		On("GetRecord", mock.Anything, uuid.MustParse(id)).Return(rec, nil).
+		On("GetRecord", mock.Anything, uuid.MustParse(idR)).Return(recRT, nil).
 		On("GetRecord", mock.Anything, uuid.MustParse(idE)).Return(nil, errors.New("error")).
 		On("GetRecord", mock.Anything, uuid.MustParse(idENF)).Return(nil, domain.ErrRecordNotFound)
 
@@ -925,6 +936,14 @@ func (s *RecordHandlersTestSuite) TestGet() {
 			want: handlers.Result{
 				Status:  http.StatusOK,
 				Payload: payload,
+			},
+		},
+		{
+			name: "get with reference ID",
+			args: args{ctx: context.Background(), id: idR},
+			want: handlers.Result{
+				Status:  http.StatusOK,
+				Payload: payloadRT,
 			},
 		},
 		{
