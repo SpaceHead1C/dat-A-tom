@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
 	"datatom/internal/api"
 	"datatom/internal/domain"
+	"datatom/internal/handlers"
 	"datatom/pkg/db"
 	"datatom/test/mocks"
 
@@ -345,7 +347,7 @@ func (s *ValueManagerTestSuite) TestSet() {
 	rID := uuid.MustParse("11111111-1111-1111-1111-111111111111")
 	pID := uuid.MustParse("22222222-2222-2222-2222-222222222222")
 	req := domain.SetValueRequest{RecordID: rID, PropertyID: pID, Type: domain.TypeNumber, Value: 7}
-	reqErr := domain.SetValueRequest{RecordID: rID, PropertyID: pID, Type: domain.TypeBool, Value: false}
+	reqErr := domain.SetValueRequest{RecordID: rID, PropertyID: pID, Type: domain.TypeBool, Value: true}
 	resp := &domain.Value{RecordID: rID, PropertyID: pID}
 	s.repo.
 		On("SetValue", mock.Anything, req).Return(resp, nil).
@@ -707,6 +709,198 @@ func (s *ValueManagerTestSuite) TestGetSender() {
 		s.Run(c.name, func() {
 			actual := s.man.GetSender(c.args.req)
 			s.Implements(c.want, actual)
+		})
+	}
+}
+
+type ValueHandlersTestSuite struct {
+	suite.Suite
+	man  *api.ValueManager
+	repo *mocks.ValueRepository
+}
+
+func TestValueHandlers(t *testing.T) {
+	suite.Run(t, new(ValueHandlersTestSuite))
+}
+
+func (s *ValueHandlersTestSuite) SetupTest() {
+	s.man, s.repo, _ = newTestValueMockedManager(s.T())
+}
+
+func (s *ValueHandlersTestSuite) TestSet() {
+	rID := "11111111-1111-1111-1111-111111111111"
+	pID := "22222222-2222-2222-2222-222222222222"
+	rtID := "33333333-3333-3333-3333-333333333333"
+	rUUID := uuid.MustParse(rID)
+	pUUID := uuid.MustParse(pID)
+	rtUUID := uuid.MustParse(rtID)
+	mockReq := domain.SetValueRequest{
+		RecordID:   rUUID,
+		PropertyID: pUUID,
+		Type:       domain.TypeNumber,
+		Value:      7,
+	}
+	mockReqRT := domain.SetValueRequest{
+		RecordID:   rUUID,
+		PropertyID: pUUID,
+		Type:       domain.TypeNumber,
+		RefTypeID:  rtUUID,
+		Value:      7,
+	}
+	mockReqE := domain.SetValueRequest{
+		RecordID:   uuid.MustParse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+		PropertyID: uuid.MustParse("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+		Type:       domain.TypeNumber,
+		Value:      7,
+	}
+	mockReqEPG := domain.SetValueRequest{
+		RecordID:   rUUID,
+		PropertyID: pUUID,
+		Type:       domain.TypeText,
+		Value:      "7",
+	}
+	req := handlers.SetValueRequestSchema{
+		RecordID:   mockReq.RecordID.String(),
+		PropertyID: mockReq.PropertyID.String(),
+		Type:       mockReq.Type.String(),
+		Value:      mockReq.Value,
+	}
+	reqRT := handlers.SetValueRequestSchema{
+		RecordID:   mockReqRT.RecordID.String(),
+		PropertyID: mockReqRT.PropertyID.String(),
+		Type:       mockReqRT.Type.String(),
+		RefTypeID:  mockReqRT.RefTypeID.String(),
+		Value:      mockReqRT.Value,
+	}
+	reqE := handlers.SetValueRequestSchema{
+		RecordID:   mockReqE.RecordID.String(),
+		PropertyID: mockReqE.PropertyID.String(),
+		Type:       mockReqE.Type.String(),
+		Value:      mockReqE.Value,
+	}
+	reqEPG := handlers.SetValueRequestSchema{
+		RecordID:   mockReqEPG.RecordID.String(),
+		PropertyID: mockReqEPG.PropertyID.String(),
+		Type:       mockReqEPG.Type.String(),
+		Value:      mockReqEPG.Value,
+	}
+	reqERParse := handlers.SetValueRequestSchema{
+		RecordID:   "hello",
+		PropertyID: mockReq.PropertyID.String(),
+		Type:       mockReq.Type.String(),
+		Value:      mockReq.Value,
+	}
+	reqEPParse := handlers.SetValueRequestSchema{
+		RecordID:   mockReq.RecordID.String(),
+		PropertyID: "hello",
+		Type:       mockReq.Type.String(),
+		Value:      mockReq.Value,
+	}
+	reqEUT := handlers.SetValueRequestSchema{
+		RecordID:   mockReq.RecordID.String(),
+		PropertyID: mockReq.PropertyID.String(),
+		Type:       "hello",
+		Value:      mockReq.Value,
+	}
+	reqERTParse := handlers.SetValueRequestSchema{
+		RecordID:   mockReq.RecordID.String(),
+		PropertyID: mockReq.PropertyID.String(),
+		Type:       mockReq.Type.String(),
+		RefTypeID:  "hello",
+		Value:      mockReq.Value,
+	}
+	val := &domain.Value{
+		RecordID:   rUUID,
+		PropertyID: pUUID,
+		Type:       domain.TypeNumber,
+		Value:      7,
+	}
+	valRT := &domain.Value{
+		RecordID:   rUUID,
+		PropertyID: pUUID,
+		Type:       domain.TypeNumber,
+		RefTypeID:  rtUUID,
+		Value:      7,
+	}
+	s.repo.
+		On("SetValue", mock.Anything, mockReq).Return(val, nil).
+		On("SetValue", mock.Anything, mockReqRT).Return(valRT, nil).
+		On("SetValue", mock.Anything, mockReqE).Return(nil, errors.New("error")).
+		On("SetValue", mock.Anything, mockReqEPG).Return(nil, domain.ErrUnexpectedTypePG)
+
+	type args struct {
+		ctx context.Context
+		req handlers.SetValueRequestSchema
+	}
+	type testCase struct {
+		name    string
+		args    args
+		want    handlers.Result
+		wantErr bool
+		err     error
+	}
+	cases := []testCase{
+		{
+			name: "set",
+			args: args{ctx: context.Background(), req: req},
+			want: handlers.Result{Status: http.StatusNoContent},
+		},
+		{
+			name: "set with reference type",
+			args: args{ctx: context.Background(), req: reqRT},
+			want: handlers.Result{Status: http.StatusNoContent},
+		},
+		{
+			name:    "set error",
+			args:    args{ctx: context.Background(), req: reqE},
+			want:    handlers.Result{Status: http.StatusInternalServerError},
+			wantErr: true,
+			err:     errors.New("error"),
+		},
+		{
+			name:    "set DB error",
+			args:    args{ctx: context.Background(), req: reqEPG},
+			want:    handlers.Result{Status: http.StatusBadRequest},
+			wantErr: true,
+			err:     domain.ErrUnexpectedTypePG,
+		},
+		{
+			name:    "set parse record ID error",
+			args:    args{ctx: context.Background(), req: reqERParse},
+			want:    handlers.Result{Status: http.StatusBadRequest},
+			wantErr: true,
+		},
+		{
+			name:    "set parse property ID error",
+			args:    args{ctx: context.Background(), req: reqEPParse},
+			want:    handlers.Result{Status: http.StatusBadRequest},
+			wantErr: true,
+		},
+		{
+			name:    "set unknown type error",
+			args:    args{ctx: context.Background(), req: reqEUT},
+			want:    handlers.Result{Status: http.StatusBadRequest},
+			wantErr: true,
+		},
+		{
+			name:    "set parse reference type ID error",
+			args:    args{ctx: context.Background(), req: reqERTParse},
+			want:    handlers.Result{Status: http.StatusBadRequest},
+			wantErr: true,
+		},
+	}
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual, err := handlers.SetValue(c.args.ctx, s.man, c.args.req)
+			if c.wantErr {
+				s.Require().Error(err)
+				if c.err != nil {
+					s.Require().EqualError(err, c.err.Error())
+				}
+			} else {
+				s.Require().NoError(err)
+			}
+			s.EqualValues(c.want, actual)
 		})
 	}
 }
