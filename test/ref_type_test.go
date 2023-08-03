@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
 	"datatom/internal/api"
 	"datatom/internal/domain"
+	"datatom/internal/handlers"
 	"datatom/pkg/db"
 	"datatom/test/mocks"
 
@@ -445,6 +447,396 @@ func (s *RefTypeManagerTestSuite) TestGetSender() {
 		s.Run(c.name, func() {
 			actual := s.man.GetSender(c.args.req)
 			s.Implements(c.want, actual)
+		})
+	}
+}
+
+type RefTypeHandlersTestSuite struct {
+	suite.Suite
+	man  *api.RefTypeManager
+	repo *mocks.RefTypeRepository
+}
+
+func TestRefTypeHandlers(t *testing.T) {
+	suite.Run(t, new(RefTypeHandlersTestSuite))
+}
+
+func (s *RefTypeHandlersTestSuite) SetupTest() {
+	s.man, s.repo, _ = newTestRefTypeMockedManager(s.T())
+}
+
+func (s *RefTypeHandlersTestSuite) TestAdd() {
+	id := uuid.MustParse("12345678-1234-1234-1234-123456789012")
+	mockReq := domain.AddRefTypeRequest{Name: "rt"}
+	mockReqE := domain.AddRefTypeRequest{Name: "error"}
+	req := handlers.AddRefTypeRequestSchema{Name: mockReq.Name}
+	reqE := handlers.AddRefTypeRequestSchema{Name: mockReqE.Name}
+	s.repo.
+		On("AddRefType", mock.Anything, mockReq).Return(id, nil).
+		On("AddRefType", mock.Anything, mockReqE).Return(uuid.Nil, errors.New("error"))
+
+	type args struct {
+		ctx context.Context
+		req handlers.AddRefTypeRequestSchema
+	}
+	type testCase struct {
+		name    string
+		args    args
+		want    handlers.TextResult
+		wantErr bool
+		err     error
+	}
+	cases := []testCase{
+		{
+			name: "add",
+			args: args{ctx: context.Background(), req: req},
+			want: handlers.TextResult{
+				Payload: id.String(),
+				Status:  http.StatusCreated,
+			},
+		},
+		{
+			name:    "add error",
+			args:    args{ctx: context.Background(), req: reqE},
+			want:    handlers.TextResult{Status: http.StatusInternalServerError},
+			wantErr: true,
+			err:     errors.New("error"),
+		},
+	}
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual, err := handlers.AddRefType(c.args.ctx, s.man, c.args.req)
+			if c.wantErr {
+				s.Require().Error(err)
+				s.Require().EqualError(err, c.err.Error())
+			} else {
+				s.Require().NoError(err)
+			}
+			s.EqualValues(c.want, actual)
+		})
+	}
+}
+
+func (s *RefTypeHandlersTestSuite) TestUpdate() {
+	name := "name"
+	descr := "description"
+	mockReq := domain.UpdRefTypeRequest{
+		ID:          uuid.MustParse("12345678-1234-1234-1234-123456789012"),
+		Name:        &name,
+		Description: &descr,
+	}
+	mockReqE := domain.UpdRefTypeRequest{
+		ID:          uuid.MustParse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+		Name:        &name,
+		Description: &descr,
+	}
+	mockReqENF := domain.UpdRefTypeRequest{
+		ID:          uuid.MustParse("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+		Name:        &name,
+		Description: &descr,
+	}
+	req := handlers.UpdRefTypeRequestSchema{
+		ID:          mockReq.ID.String(),
+		Name:        mockReq.Name,
+		Description: mockReq.Description,
+	}
+	reqE := handlers.UpdRefTypeRequestSchema{
+		ID:          mockReqE.ID.String(),
+		Name:        mockReqE.Name,
+		Description: mockReqE.Description,
+	}
+	reqENF := handlers.UpdRefTypeRequestSchema{
+		ID:          mockReqENF.ID.String(),
+		Name:        mockReqENF.Name,
+		Description: mockReqENF.Description,
+	}
+	reqEName := handlers.UpdRefTypeRequestSchema{
+		ID:          mockReq.ID.String(),
+		Description: mockReq.Description,
+	}
+	reqEDescr := handlers.UpdRefTypeRequestSchema{
+		ID:   mockReq.ID.String(),
+		Name: mockReqENF.Name,
+	}
+	reqEParse := handlers.UpdRefTypeRequestSchema{
+		ID:          "hello",
+		Name:        mockReqENF.Name,
+		Description: mockReqENF.Description,
+	}
+	rt := &domain.RefType{
+		ID:          uuid.MustParse("12345678-1234-1234-1234-123456789012"),
+		Name:        "name",
+		Description: "description",
+	}
+	s.repo.
+		On("UpdateRefType", mock.Anything, mockReq).Return(rt, nil).
+		On("UpdateRefType", mock.Anything, mockReqE).Return(nil, errors.New("error")).
+		On("UpdateRefType", mock.Anything, mockReqENF).Return(nil, domain.ErrRefTypeNotFound)
+
+	type args struct {
+		ctx context.Context
+		req handlers.UpdRefTypeRequestSchema
+	}
+	type testCase struct {
+		name    string
+		args    args
+		want    handlers.Result
+		wantErr bool
+		likeErr bool
+		err     error
+	}
+	cases := []testCase{
+		{
+			name: "update",
+			args: args{ctx: context.Background(), req: req},
+			want: handlers.Result{Status: http.StatusNoContent},
+		},
+		{
+			name:    "update error",
+			args:    args{ctx: context.Background(), req: reqE},
+			want:    handlers.Result{Status: http.StatusInternalServerError},
+			wantErr: true,
+			err:     errors.New("error"),
+		},
+		{
+			name:    "update error not found",
+			args:    args{ctx: context.Background(), req: reqENF},
+			want:    handlers.Result{Status: http.StatusNotFound},
+			wantErr: true,
+			err:     domain.ErrRefTypeNotFound,
+		},
+		{
+			name:    "update error name expected",
+			args:    args{ctx: context.Background(), req: reqEName},
+			want:    handlers.Result{Status: http.StatusBadRequest},
+			wantErr: true,
+			likeErr: true,
+			err:     domain.ErrExpected,
+		},
+		{
+			name:    "update error description expected",
+			args:    args{ctx: context.Background(), req: reqEDescr},
+			want:    handlers.Result{Status: http.StatusBadRequest},
+			wantErr: true,
+			likeErr: true,
+			err:     domain.ErrExpected,
+		},
+		{
+			name:    "update parse JSON error",
+			args:    args{ctx: context.Background(), req: reqEParse},
+			want:    handlers.Result{Status: http.StatusBadRequest},
+			wantErr: true,
+		},
+	}
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual, err := handlers.UpdateRefType(c.args.ctx, s.man, c.args.req)
+			if c.wantErr {
+				s.Require().Error(err)
+				if c.err != nil {
+					if c.likeErr {
+						s.Require().ErrorIs(err, c.err)
+					} else {
+						s.Require().EqualError(err, c.err.Error())
+					}
+				}
+			} else {
+				s.Require().NoError(err)
+			}
+			s.EqualValues(c.want, actual)
+		})
+	}
+}
+
+func (s *RefTypeHandlersTestSuite) TestPatch() {
+	id := "12345678-1234-1234-1234-123456789012"
+	name := "name"
+	descr := "description"
+	mockReq := domain.UpdRefTypeRequest{
+		ID:          uuid.MustParse(id),
+		Name:        &name,
+		Description: &descr,
+	}
+	mockReqE := domain.UpdRefTypeRequest{
+		ID:          uuid.MustParse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"),
+		Name:        &name,
+		Description: &descr,
+	}
+	mockReqENF := domain.UpdRefTypeRequest{
+		ID:          uuid.MustParse("ffffffff-ffff-ffff-ffff-ffffffffffff"),
+		Name:        &name,
+		Description: &descr,
+	}
+	req := handlers.UpdRefTypeRequestSchema{
+		ID:          mockReq.ID.String(),
+		Name:        mockReq.Name,
+		Description: mockReq.Description,
+	}
+	reqE := handlers.UpdRefTypeRequestSchema{
+		ID:          mockReqE.ID.String(),
+		Name:        mockReqE.Name,
+		Description: mockReqE.Description,
+	}
+	reqENF := handlers.UpdRefTypeRequestSchema{
+		ID:          mockReqENF.ID.String(),
+		Name:        mockReqENF.Name,
+		Description: mockReqENF.Description,
+	}
+	reqEParse := handlers.UpdRefTypeRequestSchema{
+		ID:          "hello",
+		Name:        mockReqENF.Name,
+		Description: mockReqENF.Description,
+	}
+	rt := &domain.RefType{
+		ID:          uuid.MustParse("12345678-1234-1234-1234-123456789012"),
+		Name:        "name",
+		Description: "description",
+	}
+	payload := []byte(fmt.Sprintf(`{"id":"%s","name":"%s","description":"%s"}`, id, name, descr))
+	s.repo.
+		On("UpdateRefType", mock.Anything, mockReq).Return(rt, nil).
+		On("UpdateRefType", mock.Anything, mockReqE).Return(nil, errors.New("error")).
+		On("UpdateRefType", mock.Anything, mockReqENF).Return(nil, domain.ErrRefTypeNotFound)
+
+	type args struct {
+		ctx context.Context
+		req handlers.UpdRefTypeRequestSchema
+	}
+	type testCase struct {
+		name    string
+		args    args
+		want    handlers.Result
+		wantErr bool
+		err     error
+	}
+	cases := []testCase{
+		{
+			name: "patch",
+			args: args{ctx: context.Background(), req: req},
+			want: handlers.Result{
+				Status:  http.StatusOK,
+				Payload: payload,
+			},
+		},
+		{
+			name:    "patch error",
+			args:    args{ctx: context.Background(), req: reqE},
+			want:    handlers.Result{Status: http.StatusInternalServerError},
+			wantErr: true,
+			err:     errors.New("error"),
+		},
+		{
+			name:    "patch error not found",
+			args:    args{ctx: context.Background(), req: reqENF},
+			want:    handlers.Result{Status: http.StatusNotFound},
+			wantErr: true,
+			err:     domain.ErrRefTypeNotFound,
+		},
+		{
+			name:    "patch parse JSON error",
+			args:    args{ctx: context.Background(), req: reqEParse},
+			want:    handlers.Result{Status: http.StatusBadRequest},
+			wantErr: true,
+		},
+	}
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual, err := handlers.PatchRefType(c.args.ctx, s.man, c.args.req)
+			if c.wantErr {
+				s.Require().Error(err)
+				if c.err != nil {
+					s.Require().EqualError(err, c.err.Error())
+				}
+			} else {
+				s.Require().NoError(err)
+			}
+			s.EqualValues(c.want, actual)
+		})
+	}
+}
+
+func (s *RefTypeHandlersTestSuite) TestGet() {
+	id := "12345678-1234-1234-1234-123456789012"
+	idE := "eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee"
+	idENF := "ffffffff-ffff-ffff-ffff-ffffffffffff"
+	name := "name"
+	descr := "description"
+	rt := &domain.RefType{
+		ID:          uuid.MustParse(id),
+		Name:        name,
+		Description: descr,
+	}
+	payload := []byte(fmt.Sprintf(`{"id":"%s","name":"%s","description":"%s"}`, id, name, descr))
+	payloadE := []byte("parse reference type id error: ")
+	s.repo.
+		On("GetRefType", mock.Anything, uuid.MustParse(id)).Return(rt, nil).
+		On("GetRefType", mock.Anything, uuid.MustParse(idE)).Return(nil, errors.New("error")).
+		On("GetRefType", mock.Anything, uuid.MustParse(idENF)).Return(nil, domain.ErrRefTypeNotFound)
+
+	type args struct {
+		ctx context.Context
+		id  string
+	}
+	type testCase struct {
+		name         string
+		args         args
+		want         handlers.Result
+		wantFromLeft bool
+		wantErr      bool
+		err          error
+	}
+	cases := []testCase{
+		{
+			name: "get",
+			args: args{ctx: context.Background(), id: id},
+			want: handlers.Result{
+				Status:  http.StatusOK,
+				Payload: payload,
+			},
+		},
+		{
+			name:    "get error",
+			args:    args{ctx: context.Background(), id: idE},
+			want:    handlers.Result{Status: http.StatusInternalServerError},
+			wantErr: true,
+			err:     errors.New("error"),
+		},
+		{
+			name:    "get error not found",
+			args:    args{ctx: context.Background(), id: idENF},
+			want:    handlers.Result{Status: http.StatusNotFound},
+			wantErr: true,
+			err:     domain.ErrRefTypeNotFound,
+		},
+		{
+			name: "get error parse ID",
+			args: args{ctx: context.Background(), id: "hello"},
+			want: handlers.Result{
+				Status:  http.StatusBadRequest,
+				Payload: payloadE,
+			},
+			wantFromLeft: true,
+			wantErr:      true,
+		},
+	}
+	for _, c := range cases {
+		s.Run(c.name, func() {
+			actual, err := handlers.GetRefType(c.args.ctx, s.man, c.args.id)
+			if c.wantErr {
+				s.Require().Error(err)
+				if c.err != nil {
+					s.Require().EqualError(err, c.err.Error())
+				}
+			} else {
+				s.Require().NoError(err)
+			}
+			if c.wantFromLeft {
+				right := len(c.want.Payload)
+				s.Require().LessOrEqual(right, len(actual.Payload))
+				s.Require().Greater(right, 0)
+				actual.Payload = actual.Payload[:right]
+			}
+			s.EqualValues(c.want, actual)
 		})
 	}
 }
