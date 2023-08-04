@@ -108,8 +108,8 @@ func newTestValueMockedManager(t *testing.T) (*api.ValueManager, *mocks.ValueRep
 	return out, repo, broker
 }
 
-func newTestChangedDataManager(t *testing.T) *api.ChangedDataManager {
-	repo := newPgRepo(t)
+func newTestChangedDataManager(t *testing.T) (*api.ChangedDataManager, *mocks.ChangedDataRepository) {
+	repo := mocks.NewChangedDataRepository(t)
 	out, err := api.NewChangedDataManager(api.ChangedDataConfig{
 		Repository: repo,
 		Timeout:    time.Second * 5,
@@ -117,7 +117,7 @@ func newTestChangedDataManager(t *testing.T) *api.ChangedDataManager {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return out
+	return out, repo
 }
 
 func newTestStoredConfigsManager(t *testing.T) (*api.StoredConfigsManager, *mocks.StoredConfigRepository) {
