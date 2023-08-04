@@ -1,56 +1,14 @@
 package test
 
 import (
-	"context"
-	"os"
 	"reflect"
 	"runtime"
-	"strconv"
 	"testing"
 	"time"
 
-	"datatom/internal/adapter/pg"
 	"datatom/internal/api"
-	pkgpg "datatom/pkg/db/pg"
-	"datatom/pkg/log"
 	"datatom/test/mocks"
-
-	"github.com/subosito/gotenv"
 )
-
-func newPgRepo(t *testing.T) *pg.Repository {
-	if err := gotenv.Load(); err != nil {
-		t.Fatal(err)
-	}
-	l, err := log.NewLogger()
-	if err != nil {
-		t.Fatal(err)
-	}
-	port, err := strconv.Atoi(os.Getenv("TEST_POSTGRES_PORT"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	db, err := pkgpg.NewPoolConfig(pkgpg.Config{
-		Address:      os.Getenv("TEST_POSTGRES_HOST"),
-		Port:         uint(port),
-		User:         os.Getenv("TEST_POSTGRES_USER"),
-		Password:     os.Getenv("TEST_POSTGRES_PASSWORD"),
-		DatabaseName: os.Getenv("TEST_POSTGRES_DB"),
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
-	out, err := pg.NewRepository(ctx, pg.Config{
-		ConnectConfig: db,
-		Logger:        l,
-	})
-	cancel()
-	if err != nil {
-		t.Fatal(err)
-	}
-	return out
-}
 
 func newTestRefTypeMockedManager(t *testing.T) (*api.RefTypeManager, *mocks.RefTypeRepository, *mocks.RefTypeBroker) {
 	repo := mocks.NewRefTypeRepository(t)
