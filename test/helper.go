@@ -120,8 +120,8 @@ func newTestChangedDataManager(t *testing.T) *api.ChangedDataManager {
 	return out
 }
 
-func newTestStoredConfigsManager(t *testing.T) *api.StoredConfigsManager {
-	repo := newPgRepo(t)
+func newTestStoredConfigsManager(t *testing.T) (*api.StoredConfigsManager, *mocks.StoredConfigRepository) {
+	repo := mocks.NewStoredConfigRepository(t)
 	out, err := api.NewStoredConfigManager(api.StoredConfigsConfig{
 		Repository: repo,
 		Timeout:    time.Second,
@@ -129,7 +129,7 @@ func newTestStoredConfigsManager(t *testing.T) *api.StoredConfigsManager {
 	if err != nil {
 		t.Fatal(err)
 	}
-	return out
+	return out, repo
 }
 
 func funcName(t *testing.T, f any) string {
