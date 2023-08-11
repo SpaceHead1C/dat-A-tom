@@ -12,7 +12,6 @@ require (
 	github.com/pressly/goose v2.7.0+incompatible
 	github.com/rabbitmq/amqp091-go v1.8.1
 	github.com/stretchr/testify v1.8.4
-	github.com/subosito/gotenv v1.4.2
 	github.com/wagslane/go-rabbitmq v0.12.4
 	go.uber.org/zap v1.24.0
 	golang.org/x/sync v0.1.0
