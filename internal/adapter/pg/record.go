@@ -80,11 +80,3 @@ func (r *Repository) GetRecord(ctx context.Context, id uuid.UUID) (*Record, erro
 	}
 	return schema.Record(), nil
 }
-
-func (r *Repository) GetRecordByKey(ctx context.Context, key []byte) (*Record, error) {
-	req, err := getDataRequestByKey(key)
-	if err != nil {
-		return nil, fmt.Errorf("record key unmarshal error: %w, %s", err, key)
-	}
-	return r.GetRecord(ctx, req)
-}

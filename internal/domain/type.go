@@ -3,7 +3,7 @@ package domain
 type Type uint
 
 const (
-	UndefinedType = iota
+	UndefinedType Type = iota
 	TypeNumber
 	TypeText
 	TypeBool

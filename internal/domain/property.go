@@ -14,7 +14,6 @@ type PropertyRepository interface {
 	AddProperty(context.Context, AddPropertyRequest) (uuid.UUID, error)
 	UpdateProperty(context.Context, UpdPropertyRequest) (*Property, error)
 	GetProperty(context.Context, uuid.UUID) (*Property, error)
-	GetPropertyByKey(context.Context, []byte) (*Property, error)
 	GetPropertySentStateForUpdate(context.Context, uuid.UUID, db.Transaction) (*PropertySentState, error)
 	SetSentProperty(context.Context, PropertySentState, db.Transaction) (*PropertySentState, error)
 }
