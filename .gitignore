@@ -25,3 +25,5 @@
 /test/.env
 /test/mocks/*
 !/test/mocks/generate.go
+
+/internal/pb/*.pb.go
