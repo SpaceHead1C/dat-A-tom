@@ -54,9 +54,11 @@ func (rtm *RefTypeManager) Get(ctx context.Context, id uuid.UUID) (*RefType, err
 }
 
 func (rtm *RefTypeManager) GetByKey(ctx context.Context, key []byte) (*RefType, error) {
-	ctx, cancel := context.WithTimeout(ctx, rtm.Timeout)
-	defer cancel()
-	return rtm.Repository.GetRefTypeByKey(ctx, key)
+	req, err := getDataRequestByKey(key)
+	if err != nil {
+		return nil, fmt.Errorf("invalid key error: %w, %s", err, key)
+	}
+	return rtm.Get(ctx, req)
 }
 
 func (rtm *RefTypeManager) GetSentState(ctx context.Context, id uuid.UUID, transaction db.Transaction) (*RefTypeSentState, error) {
