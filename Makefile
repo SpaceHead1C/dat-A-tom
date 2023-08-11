@@ -3,7 +3,7 @@
 MOCKED_REPOS = Property Record RefType Value ChangedData StoredConfig
 MOCKED_BROKERS = Property Record RefType Value
 GENERATED_MOCKS = $(foreach var,$(MOCKED_REPOS),./test/mocks/$(var)Repository.go) $(foreach var,$(MOCKED_BROKERS),./test/mocks/$(var)Broker.go)
-MOCK_SOURCE= changed_data.go property.go record.go ref_type.go stored_configs.go value.go
+MOCK_SOURCE = changed_data.go property.go record.go ref_type.go stored_configs.go value.go
 COVERAGE = coverage.out
 
 mocks:
@@ -24,7 +24,12 @@ coverage-total: $(COVERAGE)
 $(COVERAGE):
 	$(MAKE) tests
 
+proto:
+	go generate ./third_party/dataway
+
 clean:
 	rm -f ./$(COVERAGE)
+	rm -f $(wildcard ./internal/pb/*.pb.go)
+	$(foreach var,$(GENERATED_MOCKS),rm -f $(var))
 
-.PHONY: mocks
+.PHONY: mocks proto clean
