@@ -2,13 +2,15 @@ package config
 
 import (
 	"fmt"
-	"github.com/BurntSushi/toml"
-	"github.com/ardanlabs/conf"
 	"reflect"
 	"strings"
+
+	"github.com/BurntSushi/toml"
+	"github.com/ardanlabs/conf"
 )
 
 const (
+	namespace     = "DAT_A_TOM"
 	configPathTag = "config_file"
 	tomlParam     = "toml"
 	zeroTag       = "zero"
@@ -25,7 +27,7 @@ func Configure(args []string, cfg any, opts ...option) error {
 	if cfg == nil {
 		return fmt.Errorf("configuration object parameter can't be nil")
 	}
-	if err := conf.Parse(args, "DAT_A_TOM", cfg); err != nil {
+	if err := conf.Parse(args, namespace, cfg); err != nil {
 		return fmt.Errorf("arguments parse error: %w", err)
 	}
 	s := settings{}
