@@ -42,5 +42,5 @@ func parse(args []string, c *config) error {
 	if c.RESTPort == 0 {
 		c.RESTPort = 8080
 	}
-	return cfg.Configure(args, c)
+	return cfg.Configure(args, c, cfg.WithConfigFilePathField("ConfigFilePath"))
 }

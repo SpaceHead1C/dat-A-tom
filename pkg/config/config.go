@@ -43,7 +43,7 @@ func Configure(args []string, cfg any, opts ...option) error {
 		field := rObject.Field(i)
 		fieldType := rType.Field(i)
 
-		if s.configFilePathField != "" && fieldType.Name == s.configFilePathField && fieldType.Type.Kind() == reflect.String {
+		if s.configFilePathField != "" && fieldType.Name == s.configFilePathField && !field.IsZero() && fieldType.Type.Kind() == reflect.String {
 			if _, err := toml.DecodeFile(field.String(), cfg); err != nil {
 				return fmt.Errorf("config file parse error: %w", err)
 			}
