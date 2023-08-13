@@ -2,6 +2,7 @@ package internal
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -49,10 +50,8 @@ func (i Info) String() string {
 	return strings.Join(parts, "\n")
 }
 
-func (i *Info) SetVersion(major, minor, patch uint) {
-	i.v.major = major
-	i.v.minor = minor
-	i.v.patch = patch
+func (i *Info) SetVersion(v string) {
+	parseVersion(v, &i.v)
 }
 
 func (i Info) Version() string {
@@ -65,4 +64,25 @@ func (i Info) Title() string {
 
 func (i Info) Description() string {
 	return i.description
+}
+
+func parseVersion(s string, v *version) {
+	if s == "" {
+		return
+	}
+	parts := strings.Split(s, ".")
+	if m, err := strconv.Atoi(parts[0]); err == nil {
+		v.major = uint(m)
+	}
+	if len(parts) == 1 {
+		return
+	}
+	if m, err := strconv.Atoi(parts[1]); err == nil {
+		v.minor = uint(m)
+	}
+	if len(parts) > 2 {
+		if p, err := strconv.Atoi(parts[2]); err == nil {
+			v.patch = uint(p)
+		}
+	}
 }

@@ -1,5 +1,6 @@
 .SILENT:
 
+APP_VERSION = 0.3.0
 BINARY_NAME = datatom
 
 PB_NAMES = dataway dataway_grpc
@@ -45,16 +46,15 @@ clean:
 	rm -f ./$(COVERAGE)
 	rm -f $(wildcard ./internal/pb/*.pb.go)
 	rm -f $(foreach var,$(GENERATED_MOCKS),$(var))
-	rm -f $(wildcard ./.build/${BINARY_NAME}-*)
+	rm -f $(wildcard ./.build/$(BINARY_NAME)-*)
 
 
 build: $(GENERATED_PB)
-	GOARCH=amd64 GOOS=darwin go build -o '.build/${BINARY_NAME}-darwin-amd' ./cmd/app
-	GOARCH=arm64 GOOS=darwin go build -o '.build/${BINARY_NAME}-darwin' ./cmd/app
-	GOARCH=amd64 GOOS=linux go build -o '.build/${BINARY_NAME}-linux' ./cmd/app
-	GOARCH=amd64 GOOS=windows go build -o '.build/${BINARY_NAME}-windows.exe' ./cmd/app
+	go build -v -ldflags \
+		'-X main.Version=$(APP_VERSION)' \
+		-o '.build/$(BINARY_NAME)' ./cmd/app
 
 run: build
-	'.build/${BINARY_NAME}-windows' -c ./conf/config.toml
+	'.build/$(BINARY_NAME)' -c ./conf/config.toml
 
 .PHONY: mocks proto clean
