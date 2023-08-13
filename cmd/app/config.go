@@ -22,16 +22,16 @@ type config struct {
 	DatawayGRPCAddress string `conf:"flag:dataway_grpc_address,env:DATAWAY_GRPC_ADDRESS" toml:"dataway_grpc_address"`
 	DatawayGRPCPort    uint   `conf:"flag:dataway_grpc_port,env:DATAWAY_GRPC_PORT" toml:"dataway_grpc_port"`
 
-	RMQAddress      string `conf:"flag:rmq_address,env:RMQ_ADDRESS" toml:"rmq_address"`
-	RMQPort         uint   `conf:"flag:rmq_port,env:RMQ_PORT" toml:"rmq_port"`
-	RMQUser         string `conf:"flag:rmq_user,env:RMQ_USER" toml:"rmq_user"`
-	RMQPassword     string `conf:"flag:rmq_password,env:RMQ_PASSWORD" toml:"rmq_password"`
-	RMQVHost        string `conf:"flag:rmq_vhost,env:RMQ_VHOST" toml:"rmq_vhost"`
-	RMQConsumeQueue string `conf:"flag:rmq_consume_queue,env:RMQ_CONSUME_QUEUE" toml:"rmq_consume_queue"`
-	RMQDLE          string `conf:"flag:rmq_dle,env:RMQ_DLE" toml:"rmq_dle"`
+	RMQAddress      string `conf:"flag:rmq_address,env:RMQ_ADDRESS" toml:"rmq_address" zero:"no"`
+	RMQPort         uint   `conf:"flag:rmq_port,env:RMQ_PORT" toml:"rmq_port" zero:"no"`
+	RMQUser         string `conf:"flag:rmq_user,env:RMQ_USER" toml:"rmq_user" zero:"no"`
+	RMQPassword     string `conf:"flag:rmq_password,env:RMQ_PASSWORD" toml:"rmq_password" zero:"no"`
+	RMQVHost        string `conf:"flag:rmq_vhost,env:RMQ_VHOST" toml:"rmq_vhost" zero:"no"`
+	RMQConsumeQueue string `conf:"flag:rmq_consume_queue,env:RMQ_CONSUME_QUEUE" toml:"rmq_consume_queue" zero:"no"`
+	RMQDLE          string `conf:"flag:rmq_dle,env:RMQ_DLE" toml:"rmq_dle" zero:"no"`
 
-	DWExchange   string `conf:"flag:dw_exchange,env:DW_EXCHANGE" toml:"dw_exchange"`
-	DWRoutingKey string `conf:"flag:dw_routing_key,env:DW_ROUTING_KEY" toml:"dw_routing_key"`
+	DWExchange   string `conf:"flag:dw_exchange,env:DW_EXCHANGE" toml:"dw_exchange" zero:"no"`
+	DWRoutingKey string `conf:"flag:dw_routing_key,env:DW_ROUTING_KEY" toml:"dw_routing_key" zero:"no"`
 }
 
 func newConfig() *config {
@@ -39,5 +39,8 @@ func newConfig() *config {
 }
 
 func parse(args []string, c *config) error {
-	return cfg.Configure(args, c, cfg.WithConfigFilePathField("ConfigFilePath"))
+	if c.RESTPort == 0 {
+		c.RESTPort = 8080
+	}
+	return cfg.Configure(args, c)
 }
