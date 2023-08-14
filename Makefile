@@ -64,4 +64,7 @@ prerelease: tests clean
 release: prerelease
 	docker push $(DOCKER_IMAGE)
 
-.PHONY: mocks proto clean prerelease release
+release-run:
+	docker run --env-file './conf/.env' -p 3001:8080 $(DOCKER_IMAGE)
+
+.PHONY: mocks proto clean prerelease release release-run
