@@ -1,6 +1,7 @@
 FROM golang:1.20 AS build
 
 ARG REST_PORT=8080
+ARG RELEASE_VERSION
 
 RUN apt-get update
 RUN apt install -y protobuf-compiler
@@ -24,7 +25,7 @@ RUN go mod download
 RUN go mod verify
 RUN go generate ./third_party/dataway
 RUN go build \
-        -ldflags "-s -w" \
+        -ldflags "-s -w -X main.Version=${RELEASE_VERSION}" \
         -o datatom ./cmd/app
 
 FROM gcr.io/distroless/static-debian11

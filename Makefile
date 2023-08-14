@@ -1,6 +1,6 @@
 .SILENT:
 
-APP_VERSION = 0.3.0
+RELEASE_VERSION = 0.3.0
 BINARY_NAME = datatom
 
 PB_NAMES = dataway dataway_grpc
@@ -51,7 +51,7 @@ clean:
 
 build: $(GENERATED_PB)
 	go build -v -ldflags \
-		'-X main.Version=$(APP_VERSION)' \
+		'-X main.Version=$(RELEASE_VERSION)' \
 		-o '.build/$(BINARY_NAME)' ./cmd/app
 
 run: build
