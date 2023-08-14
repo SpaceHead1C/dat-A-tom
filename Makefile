@@ -2,6 +2,7 @@
 
 RELEASE_VERSION = 0.3.0
 BINARY_NAME = datatom
+DOCKER_IMAGE = spacehead/dat-a-tom:$(RELEASE_VERSION)
 
 PB_NAMES = dataway dataway_grpc
 GENERATED_PB = $(foreach var,$(PB_NAMES),./internal/pb/$(var).pb.go)
@@ -57,4 +58,10 @@ build: $(GENERATED_PB)
 run: build
 	'.build/$(BINARY_NAME)' -c ./conf/config.toml
 
-.PHONY: mocks proto clean
+prerelease: tests clean
+	docker build --build-arg RELEASE_VERSION=$(RELEASE_VERSION) -t $(DOCKER_IMAGE) .
+
+release: prerelease
+	docker push $(DOCKER_IMAGE)
+
+.PHONY: mocks proto clean prerelease release
