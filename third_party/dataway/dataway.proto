@@ -11,6 +11,8 @@ service Dataway {
 
   rpc RegisterNewTom(RegisterTomRequest) returns (UUID) {}
 
+  rpc UpdateTom(UpdateTomRequest) returns (google.protobuf.Empty) {}
+
   rpc Subscribe(Subscription) returns (Subscription) {}
 
   rpc DeleteSubscription(Subscription) returns (google.protobuf.Empty) {}
@@ -32,4 +34,9 @@ message Subscription {
 
 message RegisterTomRequest {
   string name = 1;
+}
+
+message UpdateTomRequest {
+  UUID id = 1;
+  string name = 2;
 }
