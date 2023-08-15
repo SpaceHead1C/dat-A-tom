@@ -9,7 +9,7 @@ import "google/protobuf/empty.proto";
 service Dataway {
   rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty) {}
 
-  rpc RegisterNewTom(google.protobuf.Empty) returns (UUID) {}
+  rpc RegisterNewTom(RegisterTomRequest) returns (UUID) {}
 
   rpc Subscribe(Subscription) returns (Subscription) {}
 
@@ -28,4 +28,8 @@ message Subscription {
   UUID consumer_id = 1;
   UUID tom_id = 2;
   UUID property_id = 3;
+}
+
+message RegisterTomRequest {
+  string name = 1;
 }
