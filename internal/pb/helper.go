@@ -22,6 +22,8 @@ func GRPCCodeToHTTPStatus(code codes.Code) int {
 		return http.StatusBadRequest
 	case codes.Unavailable:
 		return http.StatusMethodNotAllowed
+	case codes.AlreadyExists:
+		return http.StatusConflict
 	default:
 		return http.StatusInternalServerError
 	}

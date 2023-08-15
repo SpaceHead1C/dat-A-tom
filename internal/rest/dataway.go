@@ -10,10 +10,14 @@ import (
 
 func newRegisterTomHandler(s *server) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-		res, err := handlers.RegisterTom(req.Context(), s.dwGRPCConn, s.storedConfigsManager)
+		res, err := handlers.RegisterTom(req.Context(), handlers.RegisterTomRequest{
+			GRPCConn: s.dwGRPCConn,
+			SCMan:    s.storedConfigsManager,
+			AppInfo:  s.appInfo,
+		})
 		if err != nil {
 			switch res.Status {
-			case http.StatusBadRequest:
+			case http.StatusBadRequest, http.StatusConflict:
 				s.textResp(w, res.Status, err.Error())
 			case http.StatusInternalServerError:
 				s.logger.Errorf("register tom error: %s", err)

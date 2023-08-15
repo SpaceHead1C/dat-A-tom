@@ -2,18 +2,26 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+
+	"datatom/internal"
 	"datatom/internal/api"
 	"datatom/internal/domain"
 	"datatom/internal/grpc"
 	"datatom/internal/pb"
-	"encoding/json"
-	"errors"
-	"fmt"
+
 	"github.com/google/uuid"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"net/http"
 )
+
+type RegisterTomRequest struct {
+	GRPCConn *grpc.Connection
+	SCMan    *api.StoredConfigsManager
+	AppInfo  internal.Info
+}
 
 type SubscribeRequest struct {
 	GRPCConn    *grpc.Connection
@@ -29,22 +37,33 @@ type DeleteSubscriptionRequest struct {
 	Schema      SubscribeSchema
 }
 
-func RegisterTom(ctx context.Context, gRPCConn *grpc.Connection, man *api.StoredConfigsManager) (TextResult, error) {
+func RegisterTom(ctx context.Context, req RegisterTomRequest) (TextResult, error) {
 	out := TextResult{Status: http.StatusCreated}
-	if gRPCConn == nil {
+	if !req.AppInfo.HasName() {
+		out.Status = http.StatusMethodNotAllowed
+		out.Payload = "tom name has not set"
+		return out, nil
+	}
+	if req.GRPCConn == nil {
 		out.Status = http.StatusMethodNotAllowed
 		out.Payload = "disconnected from dat(A)way service"
 		return out, nil
 	}
-	client, err := gRPCConn.NewClient()
+	client, err := req.GRPCConn.NewClient()
 	if err != nil {
 		out.Status = http.StatusInternalServerError
 		return out, err
 	}
 	defer client.Close()
-	pbID, err := client.Cli.RegisterNewTom(ctx, &emptypb.Empty{})
+	pbID, err := client.Cli.RegisterNewTom(ctx, &pb.RegisterTomRequest{
+		Name: req.AppInfo.Name(),
+	})
 	if err != nil {
 		out.Status = http.StatusInternalServerError
+		if s, ok := status.FromError(err); ok {
+			out.Status = pb.GRPCCodeToHTTPStatus(s.Code())
+			err = fmt.Errorf(s.Message())
+		}
 		return out, err
 	}
 	id, err := pb.UUIDFromPb(pbID)
@@ -52,7 +71,7 @@ func RegisterTom(ctx context.Context, gRPCConn *grpc.Connection, man *api.Stored
 		out.Status = http.StatusInternalServerError
 		return out, fmt.Errorf("read ID of registered tom error: %w", err)
 	}
-	if err := man.Set(ctx, domain.StoredConfigTomID, id); err != nil {
+	if err := req.SCMan.Set(ctx, domain.StoredConfigTomID, id); err != nil {
 		out.Status = http.StatusInternalServerError
 		return out, err
 	}
