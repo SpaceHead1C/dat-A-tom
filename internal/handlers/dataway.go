@@ -79,6 +79,44 @@ func RegisterTom(ctx context.Context, req RegisterTomRequest) (TextResult, error
 	return out, nil
 }
 
+func UpdateTom(ctx context.Context, req RegisterTomRequest) (Result, error) {
+	out := Result{Status: http.StatusNoContent}
+	if !req.AppInfo.HasName() {
+		out.Status = http.StatusMethodNotAllowed
+		return out, errors.New("tom name has not set")
+	}
+	if req.GRPCConn == nil {
+		out.Status = http.StatusMethodNotAllowed
+		return out, errors.New("disconnected from dat(A)way service")
+	}
+	tomID, valid, err := getTomID(ctx, req.SCMan)
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		return out, err
+	}
+	if !valid {
+		out.Status = http.StatusMethodNotAllowed
+		return out, fmt.Errorf("tom not registered in dat(A)way service")
+	}
+	client, err := req.GRPCConn.NewClient()
+	if err != nil {
+		out.Status = http.StatusInternalServerError
+		return out, err
+	}
+	if _, err := client.Cli.UpdateTom(ctx, &pb.UpdateTomRequest{
+		Id:   pb.UUIDToPb(tomID),
+		Name: req.AppInfo.Name(),
+	}); err != nil {
+		out.Status = http.StatusInternalServerError
+		if s, ok := status.FromError(err); ok {
+			out.Status = pb.GRPCCodeToHTTPStatus(s.Code())
+			err = fmt.Errorf(s.Message())
+		}
+		return out, err
+	}
+	return out, nil
+}
+
 func GetTomID(ctx context.Context, man *api.StoredConfigsManager) (Result, error) {
 	out := Result{Status: http.StatusOK}
 	id, valid, err := getTomID(ctx, man)
