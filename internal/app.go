@@ -23,13 +23,15 @@ func (v version) String() string {
 }
 
 type Info struct {
+	name        string
 	title       string
 	description string
 	v           version
 }
 
-func NewInfo(title, description string) *Info {
+func NewInfo(name, title, description string) *Info {
 	return &Info{
+		name:        name,
 		title:       strings.TrimSpace(title),
 		description: strings.TrimSpace(description),
 	}
@@ -56,6 +58,14 @@ func (i *Info) SetVersion(v string) {
 
 func (i Info) Version() string {
 	return i.v.String()
+}
+
+func (i Info) Name() string {
+	return i.name
+}
+
+func (i Info) HasName() bool {
+	return i.name != ""
 }
 
 func (i Info) Title() string {

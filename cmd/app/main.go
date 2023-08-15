@@ -18,6 +18,7 @@ import (
 	pkgpg "datatom/pkg/db/pg"
 	pkglog "datatom/pkg/log"
 	pkgrmq "datatom/pkg/message_broker/rmq"
+
 	"github.com/go-co-op/gocron"
 	"golang.org/x/sync/errgroup"
 )
@@ -34,7 +35,7 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	info := internal.NewInfo(c.Title, c.Description)
+	info := internal.NewInfo(c.Name, c.Title, c.Description)
 	info.SetVersion(Version)
 
 	dbCC, err := pkgpg.NewConnConfig(pkgpg.Config{

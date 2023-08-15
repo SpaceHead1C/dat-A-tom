@@ -7,6 +7,7 @@ import (
 type config struct {
 	ConfigFilePath string `conf:"flag:config_file_path,short:c,env:CONFIG_FILE_PATH"`
 
+	Name       string `conf:"flag:name,env:NAME" toml:"name"`
 	Title       string `conf:"flag:title,env:TITLE" toml:"title"`
 	Description string `conf:"flag:description,env:DESCRIPTION" toml:"description"`
 
