@@ -14,6 +14,7 @@ func Info(i internal.Info) (Result, error) {
 	out := Result{Status: http.StatusOK}
 	schema := InfoResponseSchema{
 		Service:     internal.ServiceName,
+		Name:        i.Name(),
 		Version:     i.Version(),
 		Title:       i.Title(),
 		Description: i.Description(),
