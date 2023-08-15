@@ -10,7 +10,7 @@ type config struct {
 	Title       string `conf:"flag:title,env:TITLE" toml:"title"`
 	Description string `conf:"flag:description,env:DESCRIPTION" toml:"description"`
 
-	RESTPort       uint `conf:"flag:rest_port,short:r,env:REST_PORT" toml:"rest_port" zero:"no"`
+	RESTPort       uint `conf:"flag:rest_port,short:r,env:REST_PORT" toml:"rest_port"`
 	RESTTimeoutSec uint `conf:"flag:rest_timeout,short:r,env:REST_TIMEOUT" toml:"rest_timeout"`
 
 	PostgresAddress  string `conf:"flag:postgres_address,env:POSTGRES_ADDRESS" toml:"postgres_address" zero:"no"`
