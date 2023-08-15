@@ -200,9 +200,8 @@ func getTomID(ctx context.Context, man *api.StoredConfigsManager) (id uuid.UUID,
 		if errors.Is(err, domain.ErrStoredConfigTomIDNotSet) {
 			err = nil
 			valid = false
-		} else {
-			return
 		}
+		return
 	}
 	err = val.ScanStoredConfigValue(&id)
 	return
