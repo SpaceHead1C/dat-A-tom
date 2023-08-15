@@ -169,6 +169,7 @@ func valueRouter(s *server) *chi.Mux {
 func datawayRouter(s *server) *chi.Mux {
 	r := chi.NewRouter()
 	r.Post("/tom", newRegisterTomHandler(s))
+	r.Put("/tom", newUpdateTomHandler(s))
 	r.Get("/tom", newGetTomIDHandler(s))
 	r.Post("/subscription", newSubscribeHandler(s))
 	r.Delete("/subscription", newDeleteSubscriptionHandler(s))

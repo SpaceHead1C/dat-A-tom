@@ -31,6 +31,29 @@ func newRegisterTomHandler(s *server) http.HandlerFunc {
 	}
 }
 
+func newUpdateTomHandler(s *server) http.HandlerFunc {
+	return func(w http.ResponseWriter, req *http.Request) {
+		res, err := handlers.UpdateTom(req.Context(), handlers.RegisterTomRequest{
+			GRPCConn: s.dwGRPCConn,
+			SCMan:    s.storedConfigsManager,
+			AppInfo:  s.appInfo,
+		})
+		if err != nil {
+			switch res.Status {
+			case http.StatusBadRequest, http.StatusConflict, http.StatusMethodNotAllowed:
+				s.textResp(w, res.Status, err.Error())
+			case http.StatusInternalServerError:
+				s.logger.Errorf("register tom error: %s", err)
+				fallthrough
+			default:
+				s.emptyResp(w, res.Status)
+			}
+			return
+		}
+		s.emptyResp(w, res.Status)
+	}
+}
+
 func newGetTomIDHandler(s *server) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 		res, err := handlers.GetTomID(req.Context(), s.storedConfigsManager)
