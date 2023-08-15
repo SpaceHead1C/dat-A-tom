@@ -41,13 +41,11 @@ func RegisterTom(ctx context.Context, req RegisterTomRequest) (TextResult, error
 	out := TextResult{Status: http.StatusCreated}
 	if !req.AppInfo.HasName() {
 		out.Status = http.StatusMethodNotAllowed
-		out.Payload = "tom name has not set"
-		return out, nil
+		return out, errors.New("tom name has not set")
 	}
 	if req.GRPCConn == nil {
 		out.Status = http.StatusMethodNotAllowed
-		out.Payload = "disconnected from dat(A)way service"
-		return out, nil
+		return out, errors.New("disconnected from dat(A)way service")
 	}
 	client, err := req.GRPCConn.NewClient()
 	if err != nil {
